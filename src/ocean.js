@@ -12,6 +12,8 @@ uniform mat3 uRotation;
 uniform float uFov;
 uniform float uMood;
 uniform float uWind;
+uniform float uChapter;
+uniform vec4 uIslands[6];
 const float PI=3.14159265;
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
@@ -72,7 +74,13 @@ void main(){
   float blue=clamp(uMood-1.,0.,1.);
   vec3 water=mix(vec3(.028,.145,.17),vec3(.022,.068,.105),blue);
   water+=vec3(.018,.07,.063)*(sea(p.xz)*.13+.4);
+  float shore=10000.;
+  if(uChapter>1.5){for(int i=0;i<6;i++){vec2 q=(p.xz-uIslands[i].xy)/uIslands[i].zw;float angle=atan(q.y,q.x);float coast=1.+.075*sin(angle*5.)+.045*sin(angle*9.+.8);shore=min(shore,(length(q)/coast-.95)*min(uIslands[i].z,uIslands[i].w));}}
+  float shallow=exp(-max(shore,0.)*.012)*step(-15.,shore);
+  water=mix(water,vec3(.065,.40,.36),shallow*.8);
   color=mix(water,reflected,fresnel*.88+.07);
+  float surf=pow(.5+.5*sin(shore*.28-uTime*.95+noise(p.xz*.045)*3.),12.)*exp(-abs(shore-8.)*.038)*step(0.,shore);
+  color=mix(color,vec3(.78,.85,.77),surf*.48*smoothstep(.18,.75,noise(p.xz*.16)));
   vec3 halfVec=normalize(sunDir()+v);
   float nh=max(dot(n,halfVec),0.);float nv=max(dot(n,v),.001);float nl=max(dot(n,sunDir()),.001);
   float rough=.034;float a2=rough*rough;

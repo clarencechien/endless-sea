@@ -29,6 +29,19 @@ try {
  await page.locator('.close-panel').click();
  await page.locator('#sound').click();
  assert.equal(await page.locator('#sound').getAttribute('aria-label'),'關閉環境音');
+ await page.waitForFunction(()=>window.endlessSea.getState().audio?.notesPlayed>0&&window.endlessSea.getState().audio?.rms>.00001);
+ await page.locator('#settings').click();
+ for(const name of ['music','engine','wind','sea'])await page.locator(`[data-mix="${name}"]`).fill('0');
+ await page.waitForFunction(()=>window.endlessSea.getState().audio.rms<.00001);
+ for(const name of ['music','engine','wind','sea']){
+  await page.locator(`[data-mix="${name}"]`).fill('0.8');
+  await page.waitForFunction(()=>window.endlessSea.getState().audio.rms>.00001);
+  await page.locator(`[data-mix="${name}"]`).fill('0');
+  await page.waitForFunction(()=>window.endlessSea.getState().audio.rms<.00001);
+ }
+ await page.locator('[data-mix="music"]').fill('0.65');
+ const downloadPromise=page.waitForEvent('download');await page.locator('#download-midi').click();const download=await downloadPromise;assert.equal(download.suggestedFilename(),'endless-sea-chapter-1.mid');
+ await page.locator('.close-panel').click();
  await page.locator('#sound').click();
  await page.locator('#help').click();assert.equal(await page.locator('#guide').evaluate(el=>el.open),true);
  await page.keyboard.press('Escape');assert.equal(await page.locator('#guide').evaluate(el=>el.open),false);
@@ -38,6 +51,17 @@ try {
  await page.keyboard.press('r');
  assert.equal(await page.evaluate(()=>window.endlessSea.getState().autopilot),true);
  await page.screenshot({path:`${artifacts}/blue-flight.png`});
+ await page.locator('#chapter-select').selectOption('2');
+ await page.waitForFunction(()=>window.endlessSea.getState().chapter===2&&window.endlessSea.getRenderer().triangles>200000);
+ assert.equal(await page.evaluate(()=>window.endlessSea.getState().audio.chapter),2);
+ await page.screenshot({path:`${artifacts}/islands.png`});
+ await page.locator('#fullscreen').click();
+ await page.waitForFunction(()=>!!document.fullscreenElement&&document.querySelector('#fullscreen').getAttribute('aria-pressed')==='true');
+ assert.equal(await page.locator('#fullscreen').getAttribute('aria-pressed'),'true');
+ await page.locator('#fullscreen').click();
+ await page.waitForFunction(()=>!document.fullscreenElement);
+ await page.locator('#chapter-select').selectOption('1');
+ await page.waitForFunction(()=>window.endlessSea.getRenderer().triangles<10000);
  await page.close();
  const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
  mobile.on('pageerror',e=>errors.push(e.message));
@@ -53,7 +77,11 @@ try {
  await mobile.waitForFunction(()=>window.endlessSea.getState().pitch>.01);
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
  assert.equal(await mobile.evaluate(()=>window.endlessSea.getState().autopilot),false);
+ await mobile.locator('#chapter-select').selectOption('2');
+ await mobile.waitForFunction(()=>window.endlessSea.getState().chapter===2);
+ await mobile.screenshot({path:`${artifacts}/islands-mobile.png`});
+ assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth),390);
  assert.deepEqual(errors,[]);
- console.log('PASS: rendered 3D scene; manual flight; autopilot; atmosphere; quality; wind; audio; guide; hide/reset; mobile layout and touch flight.');
+ console.log('PASS: rendered 3D scene; manual flight; autopilot; atmosphere; quality; wind; audio; guide; hide/reset; mobile layout and touch flight; island chapter; four independently audible mixer buses; MIDI download; fullscreen enter/exit.');
  console.log(`Screenshots: ${artifacts}`);
 } finally {await browser.close();}
