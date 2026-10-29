@@ -43,3 +43,43 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published page and assets
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          python3 - <<'PY'
+          import os, time
+          from html.parser import HTMLParser
+          from urllib.request import urlopen
+          from urllib.parse import urljoin
+
+          class Assets(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.paths = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  if tag == 'script' and attrs.get('src'):
+                      self.paths.append(attrs['src'])
+                  if tag == 'link' and attrs.get('rel') in ('stylesheet', 'icon'):
+                      self.paths.append(attrs['href'])
+
+          url = os.environ['SITE_URL']
+          for attempt in range(12):
+              try:
+                  with urlopen(url, timeout=20) as response:
+                      html = response.read().decode('utf-8')
+                  assert '<title>Endless Sea' in html, 'Unexpected page'
+                  assets = Assets()
+                  assets.feed(html)
+                  assert len(assets.paths) >= 3, 'Missing built assets'
+                  for path in assets.paths:
+                      with urlopen(urljoin(url, path), timeout=20) as response:
+                          assert response.status == 200 and response.read(1), path
+                  print(f'Published page and {len(assets.paths)} assets verified: {url}')
+                  break
+              except Exception:
+                  if attempt == 11:
+                      raise
+                  time.sleep(5)
+          PY
