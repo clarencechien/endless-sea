@@ -83,7 +83,7 @@ void main(){
   vec3 water=mix(vec3(.028,.145,.17),vec3(.008,.025,.047),blue);
   water+=vec3(.018,.07,.063)*(sea(p.xz)*.13+.4);
   float shore=10000.;
-  if(uChapter>1.5){for(int i=0;i<6;i++){vec2 q=(p.xz-uIslands[i].xy)/uIslands[i].zw;float angle=atan(q.y,q.x);float coast=1.+.075*sin(angle*5.)+.045*sin(angle*9.+.8);shore=min(shore,(length(q)/coast-.95)*min(uIslands[i].z,uIslands[i].w));}}
+  if(uChapter>1.5){for(int i=0;i<6;i++){vec2 q=(p.xz-uIslands[i].xy)/uIslands[i].zw;float angle=atan(q.y,q.x);float coast=1.+.075*sin(angle*5.)+.045*sin(angle*9.+.8);shore=min(shore,(length(q)/coast-(uChapter<2.5?.94:uChapter<4.5?.996:.985))*min(uIslands[i].z,uIslands[i].w));}}
   float shallow=exp(-max(shore,0.)*.012)*step(-15.,shore);
   vec3 coastColor=vec3(.065,.40,.36);
   if(uChapter>2.5&&uChapter<3.5)coastColor=vec3(.055,.23,.25);

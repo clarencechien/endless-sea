@@ -1,6 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import { vertexShader, fragmentShader } from './ocean.js';
+import { createTrails } from './trails.js';
 import { createPlane } from './plane.js';
 import { createJourney, advanceJourney, journeyState, setJourneyHour, selectJourneyChapter, moodAtHour } from './journey.js';
 import { CHAPTERS } from './chapters.js';
@@ -48,6 +49,7 @@ const scene=new THREE.Scene();
 const ambient=new THREE.HemisphereLight(0xd9e8ed,0x40626c,2.25);scene.add(ambient);
 const sun=new THREE.DirectionalLight(0xffd9a3,3.2);sun.position.set(600,300,-1000);scene.add(sun);
 const plane=createPlane();scene.add(plane);
+const trails=createTrails(scene);
 let islands=createIslands();scene.add(islands);
 const backgroundScene=new THREE.Scene();
 const uniforms={uTime:{value:0},uResolution:{value:new THREE.Vector2(innerWidth,innerHeight)},uCamera:{value:new THREE.Vector3()},uRotation:{value:new THREE.Matrix3()},uFov:{value:Math.tan(THREE.MathUtils.degToRad(26))},uMood:{value:1},uWind:{value:.8},uDayHours:{value:17},uChapter:{value:1},uIslands:{value:ISLANDS.map(i=>new THREE.Vector4(i.x,i.z,i.rx,i.rz))}};
@@ -122,14 +124,15 @@ $('#sound').onclick=async()=>{
 };
 for(const input of document.querySelectorAll('[data-mix]'))input.oninput=()=>soundscape?.setLevel(input.dataset.mix,Number(input.value));
 $('#download-midi').onclick=()=>{const url=URL.createObjectURL(new Blob([encodeMidi(chapter)],{type:'audio/midi'}));const a=document.createElement('a');a.href=url;a.download=`endless-sea-chapter-${chapter}.mid`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-function resetFlight(){const flying=flight.flying;flight=createFlight();flight.flying=flying;flight.y=CHAPTERS[chapter-1].altitude;keys.clear();tilt.pause();initialized=false;updateMode();}
+function resetFlight(){const flying=flight.flying;flight=createFlight();flight.flying=flying;flight.y=CHAPTERS[chapter-1].altitude;keys.clear();tilt.pause();trails.reset();initialized=false;updateMode();}
 let chapterNoticeTimer;
 function applyChapter(next,automatic=false){
+ if(!automatic){clearTimeout(chapterNoticeTimer);$('#chapter-notice').hidden=true;}
  chapter=next;const info=CHAPTERS[chapter-1];uniforms.uChapter.value=chapter;
  scene.remove(islands);disposeIslands(islands);islands=createIslands(chapter);islands.visible=chapter>1;scene.add(islands);
  resetFlight();soundscape?.setChapter(chapter);$('#chapter-select').value=String(chapter);
  $('#intro h1').innerHTML=info.title;$('#intro > p').innerHTML=info.description;
- $('#flying-note').textContent=info.note;if(flight.flying)showFlightNote();
+ $('#flying-note').textContent=info.note;if(flight.flying&&!automatic)showFlightNote();if(automatic){clearTimeout(noteTimer);$('#flying-note').hidden=true;}
  if(automatic){$('#chapter-notice').textContent=`0${chapter} · ${info.name}`;$('#chapter-notice').hidden=false;clearTimeout(chapterNoticeTimer);chapterNoticeTimer=setTimeout(()=>$('#chapter-notice').hidden=true,6500);}
 }
 $('#chapter-select').onchange=e=>{selectJourneyChapter(journey,Number(e.target.value));applyChapter(Number(e.target.value));};
@@ -170,6 +173,9 @@ function animate(){
  uniforms.uMood.value+=(targetMood-uniforms.uMood.value)*(1-Math.exp(-dt*1.5));
  islands.userData.material.uniforms.mood.value=uniforms.uMood.value;
  const mood=uniforms.uMood.value;sun.position.set(-Math.cos((day.hours-6)/24*Math.PI*2)*680,Math.sin((day.hours-6)/24*Math.PI*2)*550,-1000);sun.color.setRGB(1,.91-Math.min(mood,1)*.12,.76-Math.min(mood,1)*.19);sun.intensity=Math.max(.08,3.2-Math.max(0,mood-1)*1.55);ambient.intensity=Math.max(.28,2.25-Math.max(0,mood-1)*.98);
+ islands.userData.material.uniforms.sunlight.value.copy(sun.position).normalize();
+ islands.userData.material.uniforms.time.value=flight.elapsed;
+ trails.update(plane,camera,dt,flight.bank,mood);
  renderer.clear();renderer.render(backgroundScene,backgroundCamera);renderer.clearDepth();renderer.render(scene,camera);
  beatCounter.update(day.beats);
  const hour=Math.floor(day.hours),minute=Math.floor((day.hours-hour)*60);
@@ -187,4 +193,4 @@ function animate(){
 }
 resize();updateMode();animate();
 // Expose a read-only snapshot for diagnostics and functional browser checks.
-window.endlessSea={getState:()=>({...flight,chapter,steeringMode,journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};
+window.endlessSea={getState:()=>({...flight,chapter,steeringMode,wake:trails.snapshot(),journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};

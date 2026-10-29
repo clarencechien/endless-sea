@@ -16,17 +16,21 @@ export function islandsForChapter(chapter=2){
  return ISLANDS;
 }
 export function terrainOrigin(x,z){return {x:Math.round(x/7000)*7000,z:-Math.floor((-z+1500)/9000)*9000};}
+const fract=n=>n-Math.floor(n);
+function hash(x,z){return fract(Math.sin(x*127.1+z*311.7)*43758.5453);}
+function noise(x,z){const ix=Math.floor(x),iz=Math.floor(z);let a=x-ix,b=z-iz;a=a*a*(3-2*a);b=b*b*(3-2*b);return (hash(ix,iz)*(1-a)+hash(ix+1,iz)*a)*(1-b)+(hash(ix,iz+1)*(1-a)+hash(ix+1,iz+1)*a)*b;}
+function fbm(x,z){return noise(x,z)*.57+noise(x*2.07+19,z*2.07-7)*.28+noise(x*4.13-11,z*4.13+23)*.15;}
 export function islandHeight(x,z,island){
  const px=(x-island.x)/island.rx,pz=(z-island.z)/island.rz;
  const angle=Math.atan2(pz,px),radius=Math.hypot(px,pz);
  const coast=1+.075*Math.sin(angle*5)+.045*Math.sin(angle*9+.8);
- const d=radius/coast;
- const mound=Math.max(0,1-d*d);
- const ridge=.7+.18*Math.sin(px*9+pz*4)+.1*Math.sin(pz*13-px*3)+.06*Math.sin(px*27+pz*19);
- if(island.kind===3)return island.height*Math.pow(mound,.48)*(.58+ridge*.43)-8;
- if(island.kind===4)return island.height*Math.min(1,mound*7)*(.75+ridge*.18)-5;
- if(island.kind===5){const cone=Math.max(0,1-d);const crater=Math.exp(-d*d/.026)*.6;return island.height*(cone*.96-crater)*(.92+ridge*.1)-5;}
- return island.height*Math.pow(mound,1.65)*ridge-5;
+ const d=radius/coast,mound=Math.max(0,1-d*d),seed=island.x*.031+island.z*.017;
+ const hills=fbm(px*4.6+seed,pz*4.6-seed),detail=fbm(px*14-seed,pz*14+seed);
+ const ridge=1-Math.abs(fbm(px*8+seed,pz*7-seed)*2-1);
+ if(island.kind===3){const spine=.64+.22*fbm(px*3+seed,pz*5)+.19*ridge;return island.height*Math.pow(mound,.48)*spine+Math.pow(mound,.4)*(detail-.5)*43-8;}
+ if(island.kind===4){const shelf=Math.min(1,mound*(5.5+hills*3));return island.height*shelf*(.69+.2*hills)+mound*(detail-.5)*14-5;}
+ if(island.kind===5){const craterRadius=Math.hypot(px+.035*Math.sin(seed),pz+.045*Math.cos(seed));const cone=Math.max(0,1-d),crater=Math.exp(-craterRadius*craterRadius/.025)*.59;return island.height*(cone*.96-crater)*(.91+hills*.18)+mound*(detail-.5)*22-5;}
+ return island.height*Math.pow(mound,1.45)*(.42+.48*hills+.3*ridge)+Math.pow(mound,1.3)*(detail-.5)*22-5;
 }
 export function terrainHeight(x,z,chapter=2){if(chapter===1)return 0;const origin=terrainOrigin(x,z);return Math.max(0,...islandsForChapter(chapter).map(i=>islandHeight(x-origin.x,z-origin.z,i)));}
 export function keepAboveTerrain(flight,chapter=2){flight.y=Math.max(flight.y,terrainHeight(flight.x,flight.z,chapter)+24);return flight;}
