@@ -1,41 +1,44 @@
 import * as THREE from 'three';
+
+// A single sheet, folded into a broad dart. The nose points down -Z.
 export function createPlane() {
- const plane = new THREE.Group();
- const ivory = new THREE.MeshStandardMaterial({color:0xf4e9d1,roughness:.38,metalness:.18});
- const red = new THREE.MeshStandardMaterial({color:0xb44c2e,roughness:.36,metalness:.2});
- const dark = new THREE.MeshStandardMaterial({color:0x283b3d,roughness:.45,metalness:.45});
- const glass = new THREE.MeshPhysicalMaterial({color:0x517279,metalness:.65,roughness:.13,clearcoat:1});
- function mesh(geo,mat,x=0,y=0,z=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);plane.add(m);return m;}
- // Nose points down -Z. A tapered, modeled fuselage rather than a billboard.
- const body=mesh(new THREE.SphereGeometry(1,32,20),ivory,0,0,.3);body.scale.set(.63,.64,2.85);
- const nose=mesh(new THREE.SphereGeometry(1,24,16),red,0,.04,-2.02);nose.scale.set(.62,.59,.7);
- const cockpit=mesh(new THREE.SphereGeometry(1,32,20),glass,0,.48,-.35);cockpit.scale.set(.48,.62,1.03);
- const topRib=mesh(new THREE.BoxGeometry(.055,.05,1.8),ivory,0,1.02,-.27);topRib.rotation.x=.04;
- // Cambered wing profiles with broad, softly rounded tips.
- function wing(span,chord,thickness,z,y,material){
-  const shape=new THREE.Shape();shape.moveTo(-span/2+.3,-chord/2);shape.lineTo(span/2-.3,-chord/2);shape.quadraticCurveTo(span/2,-chord/2,span/2,-chord/2+.3);shape.lineTo(span/2,chord/2-.3);shape.quadraticCurveTo(span/2,chord/2,span/2-.3,chord/2);shape.lineTo(-span/2+.3,chord/2);shape.quadraticCurveTo(-span/2,chord/2,-span/2,chord/2-.3);shape.lineTo(-span/2,-chord/2+.3);shape.quadraticCurveTo(-span/2,-chord/2,-span/2+.3,-chord/2);
-  const g=new THREE.ExtrudeGeometry(shape,{depth:thickness,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.045,bevelThickness:.025});g.rotateX(Math.PI/2);return mesh(g,material,0,y,z);
+ const plane=new THREE.Group();plane.name='dream-paper-plane';
+ let seed=731;const random=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
+ const pixels=new Uint8Array(128*128*4);
+ for(let i=0;i<pixels.length;i+=4){const fiber=247+Math.floor(random()*9);pixels.set([fiber,fiber,fiber,255],i);}
+ const grain=new THREE.DataTexture(pixels,128,128,THREE.RGBAFormat);grain.wrapS=grain.wrapT=THREE.RepeatWrapping;grain.repeat.set(4,4);grain.needsUpdate=true;
+ const paper=new THREE.MeshStandardMaterial({color:0xf7efd9,map:grain,roughness:.96,metalness:0});
+ const folded=new THREE.MeshStandardMaterial({color:0xe6dbc0,map:grain,roughness:1,metalness:0});
+ const edge=new THREE.MeshStandardMaterial({color:0xfff7e7,roughness:1,metalness:0});
+ const pencil=new THREE.LineBasicMaterial({color:0x9a8866,transparent:true,opacity:.18});
+ const wings=[];
+ function facet(parent,points,material){
+  // Give the sheet a fine cut edge, with separate normals for each fold.
+  const a=new THREE.Vector3(...points[0]),b=new THREE.Vector3(...points[1]),c=new THREE.Vector3(...points[2]);
+  if(b.clone().sub(a).cross(c.clone().sub(a)).y<0)[points[1],points[2]]=[points[2],points[1]];
+  const vertices=[...points,...points.map(([x,y,z])=>[x,y-.022,z])];
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices.flat(),3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(vertices.flatMap(([x,,z])=>[x*.15,z*.15]),2));
+  geometry.setIndex([0,1,2,5,4,3,0,3,4,0,4,1,1,4,5,1,5,2,2,5,3,2,3,0]);
+  geometry.clearGroups();geometry.addGroup(0,3,0);geometry.addGroup(3,3,1);geometry.addGroup(6,18,2);
+  const flat=geometry.toNonIndexed();flat.computeVertexNormals();geometry.dispose();
+  const mesh=new THREE.Mesh(flat,[material,folded,edge]);parent.add(mesh);return mesh;
  }
- wing(10.6,1.45,.12,-.28,.28,ivory);
  for(const side of [-1,1]){
-  mesh(new THREE.BoxGeometry(.28,.035,1.48),red,side*4.58,.32,-.28);
-  mesh(new THREE.BoxGeometry(.09,.025,1.48),red,side*4.28,.32,-.28);
-  // Struts connect high wings to the belly.
-  const a=new THREE.Vector3(side*.4,-.43,.1),b=new THREE.Vector3(side*3.3,.22,-.25);const d=b.clone().sub(a);
-  const strut=mesh(new THREE.CylinderGeometry(.027,.027,d.length(),8),dark);strut.position.copy(a.add(b).multiplyScalar(.5));strut.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
-  const leg=mesh(new THREE.CylinderGeometry(.045,.045,.7,8),dark,side*.64,-.7,-.8);leg.rotation.z=side*-.38;
-  const wheel=mesh(new THREE.CylinderGeometry(.22,.22,.15,16),dark,side*.8,-1.03,-.8);wheel.rotation.z=Math.PI/2;
+  const wing=new THREE.Group();wing.name=side<0?'left-paper-wing':'right-paper-wing';plane.add(wing);wings.push({wing,side});
+  const nose=[0,.2,-5.5],root=[side*.56,.06,3.1],fold=[side*2.62,.32,.85],tip=[side*4.75,.75,3.55];
+  facet(wing,[nose,root,fold],folded);
+  facet(wing,[nose,fold,tip],paper);
+  facet(wing,[fold,root,tip],paper);
+  const crease=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...nose).add(new THREE.Vector3(0,.006,0)),new THREE.Vector3(...fold).add(new THREE.Vector3(0,.006,0)),new THREE.Vector3(...root).add(new THREE.Vector3(0,.006,0))]);wing.add(new THREE.Line(crease,pencil));
+  // The tucked center fold is visible from behind and gives the dart its spine.
+  facet(plane,[nose,[0,-.95,2.45],root],folded);
+  if(side===-1){
+   // A small, imperfect gold star, like a wish drawn on the paper before folding.
+   const center=new THREE.Vector3(-3.25,.54,2.65),points=[];
+   for(let n=0;n<10;n++){const angle=n*Math.PI/5-.3,r=n%2?.12:.29;points.push(new THREE.Vector3(center.x+Math.cos(angle)*r,center.y,center.z+Math.sin(angle)*r));}
+   points.push(points[0].clone());const star=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xba9861,transparent:true,opacity:.65}));wing.add(star);
+  }
  }
- wing(3.55,.92,.06,2.45,.17,ivory);
- for(const side of [-1,1])mesh(new THREE.BoxGeometry(.35,.03,.9),red,side*1.48,.21,2.45);
- const tailShape=new THREE.Shape();tailShape.moveTo(-.6,0);tailShape.lineTo(.65,0);tailShape.lineTo(.55,1.55);tailShape.quadraticCurveTo(.3,1.65,.05,1.12);tailShape.lineTo(-.6,0);
- const fin=new THREE.ExtrudeGeometry(tailShape,{depth:.08,bevelEnabled:true,bevelThickness:.025,bevelSize:.04,bevelSegments:2});fin.rotateY(Math.PI/2);mesh(fin,red,-.04,.12,2.15);
- const propeller=new THREE.Group();propeller.position.set(0,.03,-2.76);plane.add(propeller);
- const blade=new THREE.Mesh(new THREE.BoxGeometry(.12,2.3,.035),dark);propeller.add(blade);
- const hub=mesh(new THREE.SphereGeometry(.17,16,12),ivory,0,.03,-2.8);hub.scale.z=1.5;
- const disc=new THREE.Mesh(new THREE.CircleGeometry(1.14,48),new THREE.MeshBasicMaterial({color:0xdad4bd,transparent:true,opacity:.075,side:THREE.DoubleSide,depthWrite:false}));disc.position.z=-.015;propeller.add(disc);
- const lamp=mesh(new THREE.SphereGeometry(.045,8,8),new THREE.MeshBasicMaterial({color:0xff5c3d}),-5.3,.31,-.3);
- mesh(new THREE.SphereGeometry(.045,8,8),new THREE.MeshBasicMaterial({color:0xb6edb7}),5.3,.31,-.3);
- plane.userData.propeller=propeller;plane.userData.lamp=lamp;
+ plane.userData.animate=time=>{for(const {wing,side} of wings)wing.rotation.z=side*Math.sin(time*1.4)*.008;};
  return plane;
 }

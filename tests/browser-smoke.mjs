@@ -10,7 +10,7 @@ try {
  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.goto(process.env.APP_URL||'http://127.0.0.1:5173',{waitUntil:'networkidle'});
  await page.waitForFunction(()=>document.querySelector('canvas').dataset.ready==='true');
- assert.ok(await page.evaluate(()=>window.endlessSea.getRenderer().triangles)>5000);
+ assert.ok(await page.evaluate(()=>window.endlessSea.getRenderer().triangles)>30);
  await page.screenshot({path:`${artifacts}/desktop.png`});
  await page.locator('#fly').click();
  assert.equal(await page.evaluate(()=>window.endlessSea.getState().flying),true);

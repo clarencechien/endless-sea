@@ -148,7 +148,7 @@ function animate(){
  if(chapter>1){const origin=terrainOrigin(flight.x,flight.z);islands.position.set(origin.x,0,origin.z);islandsForChapter(chapter).forEach((i,index)=>uniforms.uIslands.value[index].set(i.x+origin.x,i.z+origin.z,i.rx,i.rz));}
  plane.position.set(flight.x,flight.y+Math.sin(flight.elapsed*1.2)*.13,flight.z);
  plane.rotation.set(flight.pitch,flight.heading,flight.bank,'YXZ');
- plane.userData.propeller.rotation.z+=dt*(flight.speed+20);
+ plane.userData.animate(flight.elapsed);
  yawQuaternion.setFromAxisAngle(up,flight.heading);
  cameraOffset.set(innerWidth<600?-1:-7.5,4.8,innerWidth<600?29:19).applyQuaternion(yawQuaternion).add(plane.position);
  lookTarget.set(0,3.8,-55).applyQuaternion(yawQuaternion).add(plane.position);
