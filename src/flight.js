@@ -2,11 +2,11 @@ export const INITIAL_ALTITUDE = 128;
 export function createFlight() {
   return { x: 0, y: INITIAL_ALTITUDE, z: 0, heading: 0, pitch: 0, bank: 0, speed: 86, throttle: 86, autopilot: true, flying: false, elapsed: 0 };
 }
-export function updateFlight(f, keys, dt) {
+export function updateFlight(f, keys, dt, controls = {}) {
   dt = Math.min(Math.max(dt, 0), 0.05);
   f.elapsed += dt;
-  const rollInput = Number(keys.has('d') || keys.has('arrowright')) - Number(keys.has('a') || keys.has('arrowleft'));
-  const pitchInput = Number(keys.has('s')) - Number(keys.has('w'));
+  const rollInput = Number(keys.has('d') || keys.has('arrowright')) - Number(keys.has('a') || keys.has('arrowleft')) || Math.max(-1, Math.min(1, controls.roll || 0));
+  const pitchInput = Number(keys.has('s')) - Number(keys.has('w')) || Math.max(-1, Math.min(1, controls.pitch || 0));
   if (f.flying && (rollInput || pitchInput || keys.has('arrowup') || keys.has('arrowdown'))) f.autopilot = false;
   if (f.flying && !f.autopilot) f.throttle = Math.min(145, Math.max(48, f.throttle + (Number(keys.has('arrowup')) - Number(keys.has('arrowdown'))) * dt * 15));
   const targetBank = f.autopilot ? Math.sin(f.elapsed * .08) * .055 : -rollInput * .6;

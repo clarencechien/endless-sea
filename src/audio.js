@@ -1,6 +1,7 @@
 import { createScore, TEMPO, LOOP_BEATS, midiFrequency } from './score.js';
 export class Soundscape {
- constructor() {
+ constructor(elapsed=()=>0) {
+  this.elapsed=elapsed;
   this.context=new AudioContext();const c=this.context;
   this.master=c.createGain();this.master.gain.value=0;
   const limiter=c.createDynamicsCompressor();limiter.threshold.value=-12;limiter.ratio.value=6;this.master.connect(limiter).connect(c.destination);
@@ -33,14 +34,15 @@ export class Soundscape {
   const osc=c.createOscillator();osc.type=pad?'sine':'triangle';osc.frequency.value=midiFrequency(n.midi);osc.connect(g);osc.start(when);osc.stop(when+duration+.05);this.voices.add(osc);this.notesPlayed++;
   osc.onended=()=>{osc.disconnect();g.disconnect();this.voices.delete(osc);};
  }
+ align(){const c=this.context,beat=this.elapsed()*TEMPO/60,phase=beat%LOOP_BEATS;this.index=this.score.findIndex(n=>n.beat>=phase+.05);this.loopStart=c.currentTime-phase*60/TEMPO;if(this.index<0){this.index=0;this.loopStart+=LOOP_BEATS*60/TEMPO;}}
  schedule(){
   const c=this.context;if(!this.enabled||c.state!=='running')return;
-  if(this.loopStart+this.score[this.index].beat*60/TEMPO<c.currentTime-.25){this.loopStart=c.currentTime+.08;this.index=0;}
+  if(this.loopStart+this.score[this.index].beat*60/TEMPO<c.currentTime-.25){this.align();}
   while(this.loopStart+this.score[this.index].beat*60/TEMPO<c.currentTime+.18){this.note(this.score[this.index],this.loopStart+this.score[this.index].beat*60/TEMPO);if(++this.index===this.score.length){this.index=0;this.loopStart+=LOOP_BEATS*60/TEMPO;}}
  }
- async setEnabled(value){await this.context.resume();this.enabled=value;this.master.gain.setTargetAtTime(value?.7:0,this.context.currentTime,.2);if(value){this.loopStart=this.context.currentTime+.08;this.index=0;this.schedule();}}
+ async setEnabled(value){await this.context.resume();this.enabled=value;this.master.gain.setTargetAtTime(value?.7:0,this.context.currentTime,.2);if(value){this.align();this.schedule();}}
  setLevel(name,value){this.levels[name]=value;this.buses[name].gain.setTargetAtTime(value,this.context.currentTime,.1);}
- setChapter(chapter){this.chapter=chapter;this.score=createScore(chapter);this.index=0;this.loopStart=this.context.currentTime+.2;for(const osc of this.voices)osc.stop(this.context.currentTime+.05);}
+ setChapter(chapter){this.chapter=chapter;this.score=createScore(chapter);this.align();for(const osc of this.voices)osc.stop(this.context.currentTime+.05);}
  update(flight,wind){const c=this.context;this.engine.frequency.setTargetAtTime(29+flight.speed*.19,c.currentTime,.2);this.windFilter.frequency.setTargetAtTime(500+flight.speed*5+wind*300,c.currentTime,.5);this.seaFilter.Q.setTargetAtTime(this.chapter===2?.85:.5,c.currentTime,1);}
  async visibility(hidden){if(hidden)await this.context.suspend();else if(this.enabled)await this.context.resume();}
  snapshot(){const a=new Float32Array(this.analyser.fftSize);this.analyser.getFloatTimeDomainData(a);return {enabled:this.enabled,state:this.context.state,chapter:this.chapter,notesPlayed:this.notesPlayed,voices:this.voices.size,levels:{...this.levels},rms:Math.sqrt(a.reduce((sum,v)=>sum+v*v,0)/a.length)};}

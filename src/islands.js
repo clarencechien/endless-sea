@@ -18,8 +18,8 @@ export function createIslands(){
  vec3 color=mix(sand,grass,smoothstep(5.,20.,world.y));
  color=mix(color,rock,smoothstep(.25,.65,1.-norm.y)*smoothstep(15.,55.,world.y));
  float sun=max(dot(normalize(norm),normalize(vec3(.52,.45,-1.))),0.);
- color*=.64+sun*.65;color*=mix(vec3(1.03,1.02,.94),vec3(1.04,.91,.79),min(mood,1.));color*=1.-max(mood-1.,0.)*.38;
- float dist=length(cameraPosition-world);vec3 haze=mix(vec3(.70,.81,.80),vec3(.85,.68,.49),min(mood,1.));haze=mix(haze,vec3(.46,.41,.52),max(mood-1.,0.));
+ color*=.64+sun*.65;color*=mix(vec3(1.03,1.02,.94),vec3(1.04,.91,.79),min(mood,1.));color*=1.-max(mood-1.,0.)*.32;
+ float dist=length(cameraPosition-world);vec3 haze=mix(vec3(.70,.81,.80),vec3(.85,.68,.49),min(mood,1.));haze=mix(haze,vec3(.46,.41,.52),clamp(mood-1.,0.,1.));haze=mix(haze,vec3(.035,.05,.09),clamp(mood-2.,0.,1.));
  color=mix(color,haze,1.-exp(-dist*.00017));gl_FragColor=vec4(color,1.);
  }`});
  for(const island of ISLANDS){

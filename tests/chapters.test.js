@@ -18,3 +18,20 @@ test('terrain clearance protects every island summit and leaves high flight unto
  assert.equal(terrainHeight(0,1000),0);
  for(const island of ISLANDS){assert.ok(terrainHeight(island.x,island.z)>50);const f={x:island.x,z:island.z,y:18};keepAboveTerrain(f);assert.equal(f.y,terrainHeight(f.x,f.z)+24);f.y=2000;keepAboveTerrain(f);assert.equal(f.y,2000);}
 });
+
+import { tiltAxes } from '../src/tilt.js';
+import { createFlight, updateFlight } from '../src/flight.js';
+test('tilt handles dead zone, left/right, climb/descent and landscape rotation',()=>{
+ const neutral={beta:45,gamma:0};assert.deepEqual(tiltAxes({beta:46,gamma:2},neutral),{roll:0,pitch:0});
+ assert.ok(tiltAxes({beta:70,gamma:25},neutral).roll>0);assert.ok(tiltAxes({beta:70,gamma:25},neutral).pitch>0);
+ assert.ok(tiltAxes({beta:20,gamma:-25},neutral).roll<0);assert.ok(tiltAxes({beta:20,gamma:-25},neutral).pitch<0);
+ const landscape=tiltAxes({beta:70,gamma:0},neutral,90);assert.ok(landscape.roll>.99);assert.equal(landscape.pitch,0);
+ const f=createFlight();f.flying=true;for(let i=0;i<120;i++)updateFlight(f,new Set(),1/60,{roll:1,pitch:1});assert.equal(f.autopilot,false);assert.ok(f.x>0);assert.ok(f.y>128);
+});
+
+import { createJourney, advanceJourney, journeyState, setJourneyHour } from '../src/journey.js';
+test('day advances one hour per real minute and counts musical beats independently of sky presets',()=>{
+ const j=createJourney();advanceJourney(j,60);assert.equal(journeyState(j).hours,18);assert.equal(journeyState(j).beats,68);
+ setJourneyHour(j,8);assert.equal(journeyState(j).hours,8);assert.equal(journeyState(j).beats,68);
+ advanceJourney(j,1380);assert.equal(journeyState(j).hours,7);assert.equal(journeyState(j).day,2);assert.equal(journeyState(j).beats,1632);
+});

@@ -21,7 +21,7 @@ try {
  await page.keyboard.press('p');
  assert.equal(await page.locator('#autopilot').getAttribute('aria-pressed'),'true');
  await page.locator('[data-time="blue"]').click();
- assert.equal(await page.evaluate(()=>window.endlessSea.getState().mood),2);
+ assert.ok(await page.evaluate(()=>Math.abs(window.endlessSea.getState().journey.hours-19.5)<.1));
  await page.locator('#settings').click();
  await page.locator('#quality').selectOption('1');
  await page.locator('#wind').fill('1.2');
@@ -62,9 +62,14 @@ try {
  await page.waitForFunction(()=>!document.fullscreenElement);
  await page.locator('#chapter-select').selectOption('1');
  await page.waitForFunction(()=>window.endlessSea.getRenderer().triangles<10000);
+ await page.locator('[data-time="night"]').click();
+ await page.waitForFunction(()=>window.endlessSea.getState().journey.hours<1);
+ await page.screenshot({path:`${artifacts}/night.png`});
+ assert.ok(await page.evaluate(()=>window.endlessSea.getState().journey.beats)>0);
  await page.close();
  const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
  mobile.on('pageerror',e=>errors.push(e.message));
+ await mobile.addInitScript(()=>{DeviceOrientationEvent.requestPermission=async()=>'granted';});
  await mobile.goto(process.env.APP_URL||'http://127.0.0.1:5173',{waitUntil:'networkidle'});
  await mobile.waitForFunction(()=>document.querySelector('canvas').dataset.ready==='true');
  await mobile.screenshot({path:`${artifacts}/mobile.png`});
@@ -81,7 +86,20 @@ try {
  await mobile.waitForFunction(()=>window.endlessSea.getState().chapter===2);
  await mobile.screenshot({path:`${artifacts}/islands-mobile.png`});
  assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth),390);
+ await mobile.locator('#settings').tap();
+ await mobile.locator('#tilt-toggle').tap();
+ await mobile.evaluate(()=>{window.dispatchEvent(new DeviceOrientationEvent('deviceorientation',{beta:45,gamma:0}));for(let i=0;i<20;i++)window.dispatchEvent(new DeviceOrientationEvent('deviceorientation',{beta:65,gamma:20}));});
+ await mobile.waitForFunction(()=>window.endlessSea.getState().tilt.roll>.5&&window.endlessSea.getState().pitch>.03);
+ assert.equal(await mobile.evaluate(()=>window.endlessSea.getState().autopilot),false);
+ await mobile.locator('#tilt-calibrate').tap();
+ assert.equal(await mobile.evaluate(()=>window.endlessSea.getState().tilt.roll),0);
+ await mobile.locator('#tilt-toggle').tap();
+ assert.equal(await mobile.evaluate(()=>window.endlessSea.getState().tilt.enabled),false);
+ await mobile.evaluate(()=>{DeviceOrientationEvent.requestPermission=async()=>'denied';});
+ await mobile.locator('#tilt-toggle').tap();
+ assert.equal(await mobile.evaluate(()=>window.endlessSea.getState().tilt.enabled),false);
+ assert.ok((await mobile.locator('#tilt-status').textContent()).includes('未取得'));
  assert.deepEqual(errors,[]);
- console.log('PASS: rendered 3D scene; manual flight; autopilot; atmosphere; quality; wind; audio; guide; hide/reset; mobile layout and touch flight; island chapter; four independently audible mixer buses; MIDI download; fullscreen enter/exit.');
+ console.log('PASS: rendered 3D scene; manual flight; autopilot; atmosphere; quality; wind; audio; guide; hide/reset; mobile layout and touch flight; island chapter; four independently audible mixer buses; MIDI download; fullscreen enter/exit; simulated tilt permissions, steering and calibration; night sky and beat counter.');
  console.log(`Screenshots: ${artifacts}`);
 } finally {await browser.close();}

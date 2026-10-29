@@ -11,6 +11,7 @@ uniform vec3 uCamera;
 uniform mat3 uRotation;
 uniform float uFov;
 uniform float uMood;
+uniform float uDayHours;
 uniform float uWind;
 uniform float uChapter;
 uniform vec4 uIslands[6];
@@ -18,7 +19,7 @@ const float PI=3.14159265;
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,v=0.;mat2 r=mat2(.8,.6,-.6,.8);for(int i=0;i<5;i++){v+=a*noise(p);p=r*p*2.03+17.1;a*=.5;}return v;}
-vec3 sunDir(){return normalize(vec3(.52,mix(.3,.105,clamp(uMood,0.,1.)), -1.));}
+vec3 sunDir(){float a=(uDayHours-6.)/24.*2.*PI;return normalize(vec3(-cos(a)*.68,sin(a)*.55,-1.));}
 vec3 sky(vec3 rd,bool clouds){
  float golden=clamp(uMood,0.,1.),blue=clamp(uMood-1.,0.,1.);
  vec3 zenith=mix(vec3(.28,.53,.66),vec3(.28,.43,.52),golden);zenith=mix(zenith,vec3(.10,.15,.29),blue);
@@ -36,6 +37,13 @@ vec3 sky(vec3 rd,bool clouds){
   cc*=.82+smoothstep(.4,.8,n2)*.34;
   col=mix(col,cc,clamp(c*.76+wisps,0.,.85));
  }
+ float night=1.-smoothstep(-.14,.10,sunDir().y);
+ vec3 moonDir=normalize(vec3(-sunDir().x,-sunDir().y*.72,-1.));
+ vec3 nightSky=mix(vec3(.055,.075,.135),vec3(.008,.017,.055),smoothstep(0.,.7,h));
+ float moon=max(dot(rd,moonDir),0.);nightSky+=vec3(.20,.27,.39)*pow(moon,45.)*.22;
+ nightSky=mix(nightSky,vec3(.83,.87,.84),smoothstep(.99965,.99982,moon));
+ if(clouds){vec2 sp=vec2(atan(rd.z,rd.x),asin(clamp(rd.y,-1.,1.)))*vec2(220.,180.);float star=step(.993,hash(floor(sp)))*(1.-smoothstep(.06,.35,length(fract(sp)-.5)));nightSky+=vec3(.67,.78,.91)*star*smoothstep(.025,.25,h)*(.7+.3*sin(uTime*.4+hash(floor(sp))*100.));}
+ col=mix(col,nightSky,night);
  return col;
 }
 float sea(vec2 p){
@@ -72,7 +80,7 @@ void main(){
   float fresnel=.025+.975*pow(1.-max(dot(n,v),0.),5.);
   vec3 reflected=sky(refl,false);
   float blue=clamp(uMood-1.,0.,1.);
-  vec3 water=mix(vec3(.028,.145,.17),vec3(.022,.068,.105),blue);
+  vec3 water=mix(vec3(.028,.145,.17),vec3(.008,.025,.047),blue);
   water+=vec3(.018,.07,.063)*(sea(p.xz)*.13+.4);
   float shore=10000.;
   if(uChapter>1.5){for(int i=0;i<6;i++){vec2 q=(p.xz-uIslands[i].xy)/uIslands[i].zw;float angle=atan(q.y,q.x);float coast=1.+.075*sin(angle*5.)+.045*sin(angle*9.+.8);shore=min(shore,(length(q)/coast-.95)*min(uIslands[i].z,uIslands[i].w));}}
@@ -89,9 +97,11 @@ void main(){
   float F=.025+.975*pow(1.-max(dot(v,halfVec),0.),5.);
   float spec=min(5.,D*G*F/(4.*nv*nl+.001))*nl;
   vec3 sunColor=mix(vec3(1.,.87,.61),vec3(1.,.70,.37),clamp(uMood,0.,1.));
-  color+=sunColor*spec*1.1*(1.-blue*.7);
+  color+=sunColor*spec*1.1*(1.-blue*.7)*smoothstep(-.05,.08,sunDir().y);
   float glint=pow(max(dot(refl,sunDir()),0.),180.);
-  color+=sunColor*glint*.20;
+  color+=sunColor*glint*.20*smoothstep(-.05,.08,sunDir().y);
+  vec3 moonDir=normalize(vec3(-sunDir().x,-sunDir().y*.72,-1.));
+  color+=vec3(.19,.29,.43)*pow(max(dot(refl,moonDir),0.),140.)*(1.-smoothstep(-.14,.10,sunDir().y));
   float foam=smoothstep(.19,.33,1.-n.y)*smoothstep(.48,.72,noise(p.xz*.25+uTime*.07));
   color=mix(color,vec3(.60,.72,.70),foam*.19*exp(-dist*.0005));
   float fog=1.-exp(-dist*.000033);color=mix(color,sky(vec3(rd.x,.001,rd.z),false),fog*.87);
