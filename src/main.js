@@ -1,6 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import { vertexShader, fragmentShader } from './ocean.js';
+import { createDream } from './dream.js';
 import { createTrails } from './trails.js';
 import { createPlane } from './plane.js';
 import { createJourney, advanceJourney, journeyState, setJourneyHour, selectJourneyChapter, moodAtHour } from './journey.js';
@@ -48,8 +49,10 @@ const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,.1,15000);
 const scene=new THREE.Scene();
 const ambient=new THREE.HemisphereLight(0xd9e8ed,0x40626c,2.25);scene.add(ambient);
 const sun=new THREE.DirectionalLight(0xffd9a3,3.2);sun.position.set(600,300,-1000);scene.add(sun);
+const moonLight=new THREE.DirectionalLight(0xb5d5f5,0);scene.add(moonLight);
 const plane=createPlane();scene.add(plane);
 const trails=createTrails(scene);
+const dream=createDream(scene);
 let islands=createIslands();scene.add(islands);
 const backgroundScene=new THREE.Scene();
 const uniforms={uTime:{value:0},uResolution:{value:new THREE.Vector2(innerWidth,innerHeight)},uCamera:{value:new THREE.Vector3()},uRotation:{value:new THREE.Matrix3()},uFov:{value:Math.tan(THREE.MathUtils.degToRad(26))},uMood:{value:1},uWind:{value:.8},uDayHours:{value:17},uChapter:{value:1},uIslands:{value:ISLANDS.map(i=>new THREE.Vector4(i.x,i.z,i.rx,i.rz))}};
@@ -160,7 +163,7 @@ function animate(){
  if(chapter>1){const origin=terrainOrigin(flight.x,flight.z);islands.position.set(origin.x,0,origin.z);islandsForChapter(chapter).forEach((i,index)=>uniforms.uIslands.value[index].set(i.x+origin.x,i.z+origin.z,i.rx,i.rz));}
  plane.position.set(flight.x,flight.y+Math.sin(flight.elapsed*1.2)*.13,flight.z);
  plane.rotation.set(flight.pitch,flight.heading,flight.bank,'YXZ');
- plane.userData.animate(flight.elapsed);
+
  yawQuaternion.setFromAxisAngle(up,flight.heading);
  cameraOffset.set(innerWidth<600?-1:-7.5,4.8,innerWidth<600?29:19).applyQuaternion(yawQuaternion).add(plane.position);
  lookTarget.set(0,3.8,-55).applyQuaternion(yawQuaternion).add(plane.position);
@@ -173,9 +176,12 @@ function animate(){
  uniforms.uMood.value+=(targetMood-uniforms.uMood.value)*(1-Math.exp(-dt*1.5));
  islands.userData.material.uniforms.mood.value=uniforms.uMood.value;
  const mood=uniforms.uMood.value;sun.position.set(-Math.cos((day.hours-6)/24*Math.PI*2)*680,Math.sin((day.hours-6)/24*Math.PI*2)*550,-1000);sun.color.setRGB(1,.91-Math.min(mood,1)*.12,.76-Math.min(mood,1)*.19);sun.intensity=Math.max(.08,3.2-Math.max(0,mood-1)*1.55);ambient.intensity=Math.max(.28,2.25-Math.max(0,mood-1)*.98);
+ moonLight.position.set(-sun.position.x,-sun.position.y*.72,-1000);moonLight.intensity=THREE.MathUtils.clamp(mood-1.4,0,1)*.9;
  islands.userData.material.uniforms.sunlight.value.copy(sun.position).normalize();
  islands.userData.material.uniforms.time.value=flight.elapsed;
+ plane.userData.animate(flight.elapsed,sun.position,mood);
  trails.update(plane,camera,dt,flight.bank,mood);
+ dream.update(camera,flight.elapsed,chapter,mood,renderer.getPixelRatio());
  renderer.clear();renderer.render(backgroundScene,backgroundCamera);renderer.clearDepth();renderer.render(scene,camera);
  beatCounter.update(day.beats);
  const hour=Math.floor(day.hours),minute=Math.floor((day.hours-hour)*60);
@@ -193,4 +199,4 @@ function animate(){
 }
 resize();updateMode();animate();
 // Expose a read-only snapshot for diagnostics and functional browser checks.
-window.endlessSea={getState:()=>({...flight,chapter,steeringMode,wake:trails.snapshot(),journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};
+window.endlessSea={getState:()=>({...flight,chapter,steeringMode,wake:trails.snapshot(),dream:dream.snapshot(),journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};

@@ -35,6 +35,8 @@ vec3 sky(vec3 rd,bool clouds){
   float wisps=smoothstep(.58,.8,fbm(p*vec2(.9,5.)+43.))*smoothstep(.03,.25,rd.y)*.25;
   vec3 cc=mix(vec3(.89,.88,.81),vec3(.86,.68,.53),golden);cc=mix(cc,vec3(.44,.39,.51),blue);
   cc*=.82+smoothstep(.4,.8,n2)*.34;
+  float silver=pow(clamp(1.-abs(n*.8+n2*.2-.48)*9.,0.,1.),3.);
+  cc+=sun*silver*pow(s,7.)*.26;
   col=mix(col,cc,clamp(c*.76+wisps,0.,.85));
  }
  float night=1.-smoothstep(-.14,.10,sunDir().y);
@@ -43,6 +45,15 @@ vec3 sky(vec3 rd,bool clouds){
  float moon=max(dot(rd,moonDir),0.);nightSky+=vec3(.20,.27,.39)*pow(moon,45.)*.22;
  nightSky=mix(nightSky,vec3(.83,.87,.84),smoothstep(.99965,.99982,moon));
  if(clouds){vec2 sp=vec2(atan(rd.z,rd.x),asin(clamp(rd.y,-1.,1.)))*vec2(220.,180.);float star=step(.993,hash(floor(sp)))*(1.-smoothstep(.06,.35,length(fract(sp)-.5)));nightSky+=vec3(.67,.78,.91)*star*smoothstep(.025,.25,h)*(.7+.3*sin(uTime*.4+hash(floor(sp))*100.));}
+ if(night>.01){
+  float azimuth=atan(rd.x,-rd.z),polar=uChapter>3.5&&uChapter<4.5?1.:.22;
+  float arc=.24+.075*sin(azimuth*2.4+uTime*.012)+.028*sin(azimuth*6.-uTime*.018);
+  float curtain=exp(-pow((h-arc)/.075,2.));
+  float threads=.4+.6*noise(vec2(azimuth*75.+uTime*.05,h*2.));
+  vec3 aurora=mix(vec3(.13,.48,.39),vec3(.32,.20,.46),smoothstep(arc-.02,arc+.09,h));
+  nightSky+=aurora*curtain*threads*polar*smoothstep(.025,.12,h)*.55;
+  if(clouds){float galaxy=exp(-pow((rd.x*.4+rd.y*.7+rd.z*.2-.16)/.16,2.));float dust=fbm(rd.xz*5.+rd.y*3.);nightSky+=vec3(.065,.075,.13)*galaxy*pow(dust,2.)*smoothstep(.05,.35,h);}
+ }
  col=mix(col,nightSky,night);
  return col;
 }
@@ -90,6 +101,8 @@ void main(){
   if(uChapter>3.5&&uChapter<4.5){water=mix(water,vec3(.035,.14,.21),.3);coastColor=vec3(.18,.43,.51);}
   if(uChapter>4.5)coastColor=vec3(.075,.16,.17);
   water=mix(water,coastColor,shallow*.8);
+  float caustic=pow(1.-abs(noise(p.xz*.075+uTime*.035)*2.-1.),16.);
+  water+=vec3(.10,.17,.12)*caustic*shallow*.34*exp(-dist*.001)*smoothstep(0.,.2,sunDir().y);
   color=mix(water,reflected,fresnel*.88+.07);
   float surf=pow(.5+.5*sin(shore*.28-uTime*.95+noise(p.xz*.045)*3.),12.)*exp(-abs(shore-8.)*.038)*step(0.,shore);
   color=mix(color,vec3(.78,.85,.77),surf*.48*smoothstep(.18,.75,noise(p.xz*.16)));
@@ -108,6 +121,11 @@ void main(){
   color+=vec3(.19,.29,.43)*pow(max(dot(refl,moonDir),0.),140.)*(1.-smoothstep(-.14,.10,sunDir().y));
   float foam=smoothstep(.19,.33,1.-n.y)*smoothstep(.48,.72,noise(p.xz*.25+uTime*.07));
   color=mix(color,vec3(.60,.72,.70),foam*.19*exp(-dist*.0005));
+  float nightGlow=1.-smoothstep(-.12,.08,sunDir().y);
+  float plankton=smoothstep(.58,.76,noise(p.xz*.027+vec2(uTime*.013,0.)));
+  float lace=pow(.5+.5*sin(dot(p.xz,vec2(.18,.13))+uTime*.8+noise(p.xz*.065)*5.),8.);
+  vec3 glowColor=uChapter>4.5?vec3(.20,.055,.015):vec3(.025,.19,.22);
+  color+=glowColor*plankton*lace*nightGlow*exp(-dist*.0007)*(.25+shallow*.75);
   float fog=1.-exp(-dist*.000033);color=mix(color,sky(vec3(rd.x,.001,rd.z),false),fog*.87);
  }
  color=clamp(color,0.,1.);
