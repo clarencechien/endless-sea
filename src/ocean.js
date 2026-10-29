@@ -1,3 +1,5 @@
+import { skyShader } from './sky.js';
+
 export const vertexShader = /* glsl */`
 varying vec2 vUv;
 void main(){vUv=uv;gl_Position=vec4(position.xy,0.999999,1.0);}
@@ -19,44 +21,7 @@ const float PI=3.14159265;
 float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float a=.5,v=0.;mat2 r=mat2(.8,.6,-.6,.8);for(int i=0;i<5;i++){v+=a*noise(p);p=r*p*2.03+17.1;a*=.5;}return v;}
-vec3 sunDir(){float a=(uDayHours-6.)/24.*2.*PI;return normalize(vec3(-cos(a)*.68,sin(a)*.55,-1.));}
-vec3 sky(vec3 rd,bool clouds){
- float golden=clamp(uMood,0.,1.),blue=clamp(uMood-1.,0.,1.);
- vec3 zenith=mix(vec3(.28,.53,.66),vec3(.28,.43,.52),golden);zenith=mix(zenith,vec3(.10,.15,.29),blue);
- vec3 horizon=mix(vec3(.79,.87,.84),vec3(.93,.73,.51),golden);horizon=mix(horizon,vec3(.62,.48,.54),blue);
- float h=max(rd.y,0.);vec3 col=mix(horizon,zenith,1.-exp(-h*3.1));
- float s=max(dot(rd,sunDir()),0.);vec3 sun=mix(vec3(1.,.88,.63),vec3(1.,.67,.32),golden);sun=mix(sun,vec3(.91,.65,.58),blue);
- col+=sun*pow(s,10.)*.12+sun*pow(s,100.)*.19;
- float disk=smoothstep(.99978,.99991,s);col=mix(col,mix(vec3(1.,.96,.78),vec3(.95,.81,.78),blue),disk*(1.-blue*.4));
- if(clouds && rd.y>.005){
-  vec2 p=rd.xz/(rd.y+.14)*1.65+vec2(uTime*.002,0.);
-  float n=fbm(p*1.7+vec2(14,3));float n2=fbm(p*3.6-vec2(9,2));
-  float c=smoothstep(.45,.72,n*.8+n2*.2)*smoothstep(.012,.16,rd.y);
-  float wisps=smoothstep(.58,.8,fbm(p*vec2(.9,5.)+43.))*smoothstep(.03,.25,rd.y)*.25;
-  vec3 cc=mix(vec3(.89,.88,.81),vec3(.86,.68,.53),golden);cc=mix(cc,vec3(.44,.39,.51),blue);
-  cc*=.82+smoothstep(.4,.8,n2)*.34;
-  float silver=pow(clamp(1.-abs(n*.8+n2*.2-.48)*9.,0.,1.),3.);
-  cc+=sun*silver*pow(s,7.)*.26;
-  col=mix(col,cc,clamp(c*.76+wisps,0.,.85));
- }
- float night=1.-smoothstep(-.14,.10,sunDir().y);
- vec3 moonDir=normalize(vec3(-sunDir().x,-sunDir().y*.72,-1.));
- vec3 nightSky=mix(vec3(.055,.075,.135),vec3(.008,.017,.055),smoothstep(0.,.7,h));
- float moon=max(dot(rd,moonDir),0.);nightSky+=vec3(.20,.27,.39)*pow(moon,45.)*.22;
- nightSky=mix(nightSky,vec3(.83,.87,.84),smoothstep(.99965,.99982,moon));
- if(clouds){vec2 sp=vec2(atan(rd.z,rd.x),asin(clamp(rd.y,-1.,1.)))*vec2(220.,180.);float star=step(.993,hash(floor(sp)))*(1.-smoothstep(.06,.35,length(fract(sp)-.5)));nightSky+=vec3(.67,.78,.91)*star*smoothstep(.025,.25,h)*(.7+.3*sin(uTime*.4+hash(floor(sp))*100.));}
- if(night>.01){
-  float azimuth=atan(rd.x,-rd.z),polar=uChapter>3.5&&uChapter<4.5?1.:.22;
-  float arc=.24+.075*sin(azimuth*2.4+uTime*.012)+.028*sin(azimuth*6.-uTime*.018);
-  float curtain=exp(-pow((h-arc)/.075,2.));
-  float threads=.4+.6*noise(vec2(azimuth*75.+uTime*.05,h*2.));
-  vec3 aurora=mix(vec3(.13,.48,.39),vec3(.32,.20,.46),smoothstep(arc-.02,arc+.09,h));
-  nightSky+=aurora*curtain*threads*polar*smoothstep(.025,.12,h)*.55;
-  if(clouds){float galaxy=exp(-pow((rd.x*.4+rd.y*.7+rd.z*.2-.16)/.16,2.));float dust=fbm(rd.xz*5.+rd.y*3.);nightSky+=vec3(.065,.075,.13)*galaxy*pow(dust,2.)*smoothstep(.05,.35,h);}
- }
- col=mix(col,nightSky,night);
- return col;
-}
+${skyShader}
 float sea(vec2 p){
  float t=uTime;float h=0.;float frequency=.026;float amp=1.55;float speed=.66;float angle=.3;
  for(int i=0;i<6;i++){
@@ -131,7 +96,8 @@ void main(){
  color=clamp(color,0.,1.);
  color=pow(color,vec3(.94));
  float vignette=1.-.12*pow(length((vUv-.5)*1.25),2.);color*=vignette;
- color+=(hash(gl_FragCoord.xy+fract(uTime))-.5)/255.;
+ // Static triangular dithering softens 8-bit sky banding without temporal sparkle.
+ color+=(hash(gl_FragCoord.xy)+hash(gl_FragCoord.xy+vec2(17.73,91.31))-1.)/255.;
  gl_FragColor=vec4(color,1.);
 }
 `;
