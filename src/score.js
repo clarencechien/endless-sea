@@ -2,12 +2,19 @@
 export const TEMPO = 68;
 export const LOOP_BEATS = 32;
 export function createScore(chapter = 1) {
-  const chords = chapter === 2 ? [[50,57,62,66],[55,62,66,69],[52,59,64,67],[57,64,67,71]] : [[48,55,60,64],[45,52,57,60],[53,60,64,67],[55,62,65,69]];
+  const harmonies=[
+   [[48,55,60,64],[45,52,57,60],[53,60,64,67],[55,62,65,69]],
+   [[50,57,62,66],[55,62,66,69],[52,59,64,67],[57,64,67,71]],
+   [[38,45,50,53],[41,48,53,57],[43,50,55,58],[45,52,57,60]],
+   [[60,67,72,76],[57,64,69,72],[62,69,74,77],[55,62,67,71]],
+   [[40,47,52,55],[43,50,55,59],[45,52,57,60],[47,54,59,62]]
+  ];
+  const chords=harmonies[chapter-1]??harmonies[0];
   const notes = [];
   for (let bar=0;bar<8;bar++) {
     const chord=chords[bar%4];
     chord.forEach((midi,i)=>notes.push({beat:bar*4+i*.04,midi,duration:3.7,velocity:38,voice:'pad'}));
-    const pattern=chapter===2?[0,2,1,3]:[0,2,3];
+    const pattern=chapter===2?[0,2,1,3]:chapter===4?[3,1]:chapter===5?[0,1,2]:[0,2,3];
     pattern.forEach((index,i)=>notes.push({beat:bar*4+i*(chapter===2?1:1.25),midi:chord[index]+12,duration:1.9,velocity:chapter===2?62:54,voice:'piano'}));
   }
   return notes.map(n=>({...n,duration:Math.min(n.duration,LOOP_BEATS-n.beat-.05)})).sort((a,b)=>a.beat-b.beat);

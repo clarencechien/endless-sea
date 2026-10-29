@@ -2,12 +2,13 @@ import './style.css';
 import * as THREE from 'three';
 import { vertexShader, fragmentShader } from './ocean.js';
 import { createPlane } from './plane.js';
-import { createJourney, advanceJourney, journeyState, setJourneyHour, moodAtHour } from './journey.js';
+import { createJourney, advanceJourney, journeyState, setJourneyHour, selectJourneyChapter, moodAtHour } from './journey.js';
+import { CHAPTERS } from './chapters.js';
 import { TiltController } from './tilt.js';
 import { Soundscape } from './audio.js';
 import { encodeMidi } from './score.js';
-import { createIslands } from './islands.js';
-import { ISLANDS, keepAboveTerrain } from './terrain.js';
+import { createIslands, disposeIslands } from './islands.js';
+import { ISLANDS, islandsForChapter, terrainOrigin, keepAboveTerrain } from './terrain.js';
 import { createFlight, updateFlight, headingDegrees } from './flight.js';
 
 const $ = s => document.querySelector(s);
@@ -38,7 +39,7 @@ const scene=new THREE.Scene();
 const ambient=new THREE.HemisphereLight(0xd9e8ed,0x40626c,2.25);scene.add(ambient);
 const sun=new THREE.DirectionalLight(0xffd9a3,3.2);sun.position.set(600,300,-1000);scene.add(sun);
 const plane=createPlane();scene.add(plane);
-const islands=createIslands();scene.add(islands);
+let islands=createIslands();scene.add(islands);
 const backgroundScene=new THREE.Scene();
 const uniforms={uTime:{value:0},uResolution:{value:new THREE.Vector2(innerWidth,innerHeight)},uCamera:{value:new THREE.Vector3()},uRotation:{value:new THREE.Matrix3()},uFov:{value:Math.tan(THREE.MathUtils.degToRad(26))},uMood:{value:1},uWind:{value:.8},uDayHours:{value:17},uChapter:{value:1},uIslands:{value:ISLANDS.map(i=>new THREE.Vector4(i.x,i.z,i.rx,i.rz))}};
 const ocean=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({vertexShader,fragmentShader,uniforms,depthTest:false,depthWrite:false}));ocean.frustumCulled=false;backgroundScene.add(ocean);
@@ -107,15 +108,18 @@ $('#sound').onclick=async()=>{
 };
 for(const input of document.querySelectorAll('[data-mix]'))input.oninput=()=>soundscape?.setLevel(input.dataset.mix,Number(input.value));
 $('#download-midi').onclick=()=>{const url=URL.createObjectURL(new Blob([encodeMidi(chapter)],{type:'audio/midi'}));const a=document.createElement('a');a.href=url;a.download=`endless-sea-chapter-${chapter}.mid`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-function resetFlight(){const flying=flight.flying;flight=createFlight();flight.flying=flying;if(chapter===2)flight.y=190;keys.clear();tilt.pause();initialized=false;updateMode();}
-$('#chapter-select').onchange=e=>{
- chapter=Number(e.target.value);uniforms.uChapter.value=chapter;islands.visible=chapter===2;resetFlight();soundscape?.setChapter(chapter);
- $('#intro h1').innerHTML=chapter===2?'海的另一邊，<br><em>藏著一座島。</em>':'把世界留在身後。<br><em>向海平線飛去。</em>';
- $('#intro > p').innerHTML=chapter===2?'沿著淺藍色的岸線，飛過層疊的青山。<br>讓每一座島，成為路過的風景。':'沒有目的地，也不必趕路。<br>一架小飛機，一片無邊的海，和剛剛好的自由。';
- $('.scene-label > div').innerHTML=chapter===2?'THE QUIET ISLANDS<small>CHAPTER 02 · 沿著海岸飛行</small>':'THE OPEN WATER<small>25° 03′ N &nbsp; 121° 33′ E</small>';
- $('#flying-note').innerHTML=chapter===2?'沿著海岸，遇見另一種藍。<span>EVERY ISLAND HOLDS A LITTLE WONDER.</span>':'放慢一點，世界很遼闊。<span>LET THE HORIZON FIND YOU.</span>';
-
-};
+function resetFlight(){const flying=flight.flying;flight=createFlight();flight.flying=flying;flight.y=CHAPTERS[chapter-1].altitude;keys.clear();tilt.pause();initialized=false;updateMode();}
+let chapterNoticeTimer;
+function applyChapter(next,automatic=false){
+ chapter=next;const info=CHAPTERS[chapter-1];uniforms.uChapter.value=chapter;
+ scene.remove(islands);disposeIslands(islands);islands=createIslands(chapter);islands.visible=chapter>1;scene.add(islands);
+ resetFlight();soundscape?.setChapter(chapter);$('#chapter-select').value=String(chapter);
+ $('#intro h1').innerHTML=info.title;$('#intro > p').innerHTML=info.description;
+ $('.scene-label > div').innerHTML=`${info.location}<small>CHAPTER 0${chapter} · ${info.name}</small>`;
+ $('#flying-note').innerHTML=`${info.note}<span>${info.poem}</span>`;
+ if(automatic){$('#chapter-notice').textContent=`CHAPTER 0${chapter} · ${info.name}`;$('#chapter-notice').hidden=false;clearTimeout(chapterNoticeTimer);chapterNoticeTimer=setTimeout(()=>$('#chapter-notice').hidden=true,6500);}
+}
+$('#chapter-select').onchange=e=>{selectJourneyChapter(journey,Number(e.target.value));applyChapter(Number(e.target.value));};
 const fullscreenButton=$('#fullscreen');
 function syncFullscreen(){const active=!!document.fullscreenElement;fullscreenButton.setAttribute('aria-pressed',String(active));fullscreenButton.setAttribute('aria-label',active?'退出全螢幕':'進入全螢幕');fullscreenButton.title=active?'退出全螢幕（Esc）':'進入全螢幕';}
 fullscreenButton.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();syncFullscreen();}catch{$('#sound-status').textContent='此瀏覽器無法進入全螢幕，可用 H 隱藏介面。';$('#settings-panel').hidden=false;}};
@@ -129,7 +133,9 @@ function animate(){
  if(document.hidden)return;
  const elapsed=clock.getDelta();const dt=Math.min(elapsed,.05);
  advanceJourney(journey,elapsed);const day=journeyState(journey);uniforms.uDayHours.value=day.hours;targetMood=moodAtHour(day.hours);
- updateFlight(flight,keys,dt,flight.flying&&tilt.enabled?tilt.output:{});if(chapter===2)keepAboveTerrain(flight);updateMode();
+ if(day.chapter!==chapter)applyChapter(day.chapter,true);
+ updateFlight(flight,keys,dt,flight.flying&&tilt.enabled?tilt.output:{});if(chapter>1)keepAboveTerrain(flight,chapter);updateMode();
+ if(chapter>1){const origin=terrainOrigin(flight.x,flight.z);islands.position.set(origin.x,0,origin.z);islandsForChapter(chapter).forEach((i,index)=>uniforms.uIslands.value[index].set(i.x+origin.x,i.z+origin.z,i.rx,i.rz));}
  plane.position.set(flight.x,flight.y+Math.sin(flight.elapsed*1.2)*.13,flight.z);
  plane.rotation.set(flight.pitch,flight.heading,flight.bank,'YXZ');
  plane.userData.propeller.rotation.z+=dt*(flight.speed+20);
@@ -163,4 +169,4 @@ function animate(){
 }
 updateMode();animate();
 // Expose a read-only snapshot for diagnostics and functional browser checks.
-window.endlessSea={getState:()=>({...flight,chapter,journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render};
+window.endlessSea={getState:()=>({...flight,chapter,journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};
