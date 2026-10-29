@@ -10,15 +10,19 @@ try{
  await page.waitForFunction(()=>document.querySelector('#dream-beats').dataset.value==='0');
  const setBeat=async n=>{await page.evaluate(n=>window.counterTime=n*60000/68+1,n);await page.waitForFunction(n=>document.querySelector('#dream-beats').dataset.value===String(n),n);};
  await setBeat(9);
- assert.equal(await page.locator('.beat-digit').count(),4);
+ assert.equal(await page.locator('#dream-beats .beat-digit').count(),4);
  await setBeat(10);
  assert.equal(await page.locator('#dream-beats').getAttribute('aria-label'),'10');
- const reels=await page.locator('.beat-reel').evaluateAll(els=>els.map(el=>({value:el.style.transform,frames:el.getAnimations().map(a=>a.effect.getKeyframes().map(k=>k.transform))})));
+ const reels=await page.locator('#dream-beats .beat-reel').evaluateAll(els=>els.map(el=>({value:el.style.transform,frames:el.getAnimations().map(a=>a.effect.getKeyframes().map(k=>k.transform))})));
  assert.equal(reels[2].value,'translateY(-1em)');assert.equal(reels[3].value,'translateY(0em)');
  assert.ok(reels[3].frames.some(frames=>frames.includes('translateY(-10em)')),'9→0 should roll forward to the duplicate zero');
  await page.emulateMedia({reducedMotion:'reduce'});await setBeat(11);
- assert.equal(await page.locator('.beat-reel').evaluateAll(els=>els.reduce((n,el)=>n+el.getAnimations().length,0)),0);
- await setBeat(9999);await setBeat(10000);assert.equal(await page.locator('.beat-digit').count(),5);
+ assert.equal(await page.locator('#dream-beats .beat-reel').evaluateAll(els=>els.reduce((n,el)=>n+el.getAnimations().length,0)),0);
+ await setBeat(9999);await setBeat(10000);assert.equal(await page.locator('#dream-beats .beat-digit').count(),5);
  assert.equal(await page.locator('#dream-beats').getAttribute('aria-label'),'10000');
+ await page.locator('#fullscreen').click();
+ await page.waitForFunction(()=>!!document.fullscreenElement&&document.querySelector('#world').height===innerHeight);
+ await page.locator('#fullscreen').click();
+ await page.waitForFunction(()=>!document.fullscreenElement&&document.querySelector('#world').height===innerHeight);
  assert.deepEqual(errors,[]);console.log('PASS: fixed-width digit reels, 9→10 carry, accessible count, reduced motion and 9999→10000 growth.');
 }finally{await browser.close();}

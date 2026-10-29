@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#7d9b9e"><link rel="icon" href="/favicon.svg"><title>Endless Sea — 向海平線飛去</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#7d9b9e"><link rel="icon" href="/favicon.svg"><title>Endless Sea — 向海平線飛去</title></head>
 <body>
 <canvas id="world" aria-label="即時 3D 海洋與飛行場景"></canvas>
 <div class="grain"></div>
@@ -23,7 +23,7 @@
 </main>
 <footer>
   <div class="flight-status"><span class="status-dot"></span><div id="mode-label">準備出發</div></div>
-  <div class="instruments"><div class="instrument"><span>高度</span><strong id="altitude">128 <small>M</small></strong></div><div class="instrument compass-instrument"><span>航向</span><div class="compass-scale">W <i></i><i></i><i></i> <b>N</b> <i></i><i></i><i></i> E</div><strong id="heading">000°</strong></div><div class="instrument"><span>空速</span><strong id="airspeed">86 <small>KT</small></strong></div></div>
+  <div class="instruments"><div class="instrument"><span>高度</span><strong><span id="altitude" class="instrument-digits" role="img" aria-label="128">128</span><small>M</small></strong></div><div class="instrument compass-instrument"><span>航向</span><strong><span id="heading" class="instrument-digits" role="img" aria-label="0">000</span><small>°</small></strong></div><div class="instrument"><span>空速</span><strong><span id="airspeed" class="instrument-digits" role="img" aria-label="86">086</span><small>KT</small></strong></div></div>
   <button id="autopilot" class="autopilot active" aria-pressed="true"><span>自動巡航</span><span class="toggle"><i></i></span></button>
 </footer>
 <div class="bottom-line"><button id="hide-ui">隱藏介面 <kbd>H</kbd></button></div>

@@ -4,7 +4,7 @@ import { vertexShader, fragmentShader } from './ocean.js';
 import { createPlane } from './plane.js';
 import { createJourney, advanceJourney, journeyState, setJourneyHour, selectJourneyChapter, moodAtHour } from './journey.js';
 import { CHAPTERS } from './chapters.js';
-import { RollingCounter } from './counter.js';
+import { RollingCounter, RollingInstrument } from './counter.js';
 import { TiltController } from './tilt.js';
 import { Soundscape } from './audio.js';
 import { encodeMidi } from './score.js';
@@ -17,6 +17,9 @@ const canvas = $('#world');
 const mobileInput=matchMedia('(pointer: coarse)').matches;
 let steeringMode=mobileInput?'tilt':'keyboard';
 const beatCounter=new RollingCounter($('#dream-beats'));
+const altitudeDial=new RollingInstrument($('#altitude'));
+const headingDial=new RollingInstrument($('#heading'),{digits:3,cycle:360});
+const airspeedDial=new RollingInstrument($('#airspeed'));
 if(mobileInput)document.body.classList.add('mobile-input');
 const tilt=new TiltController(message=>{
  $('#tilt-status').textContent=message;
@@ -36,7 +39,7 @@ try {
  throw new Error('WebGL 2 is required');
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
-renderer.setSize(innerWidth,innerHeight);
+renderer.setSize(innerWidth,innerHeight,false);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.15;
 renderer.autoClear=false;
@@ -135,8 +138,14 @@ function syncFullscreen(){const active=!!document.fullscreenElement;fullscreenBu
 fullscreenButton.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();syncFullscreen();}catch{$('#sound-status').textContent='此瀏覽器無法進入全螢幕，可用 H 隱藏介面。';$('#settings-panel').hidden=false;}};
 if(!document.fullscreenEnabled){fullscreenButton.disabled=true;fullscreenButton.title='此瀏覽器不支援全螢幕，可使用隱藏介面';}
 document.addEventListener('fullscreenchange',syncFullscreen);syncFullscreen();
-function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,quality));renderer.setSize(innerWidth,innerHeight);uniforms.uResolution.value.set(innerWidth,innerHeight);}
+function resize(){
+ const bounds=canvas.getBoundingClientRect(),width=Math.max(1,Math.round(bounds.width)),height=Math.max(1,Math.round(bounds.height));
+ camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,quality));renderer.setSize(width,height,false);uniforms.uResolution.value.set(width,height);
+}
 window.addEventListener('resize',resize);
+window.visualViewport?.addEventListener('resize',resize);
+document.addEventListener('fullscreenchange',resize);
+new ResizeObserver(resize).observe(canvas);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();$('#error').hidden=false;$('#error').textContent='圖形連線暫時中斷，請重新整理以繼續飛行。';});
 function animate(){
  requestAnimationFrame(animate);
@@ -168,14 +177,14 @@ function animate(){
  const phase=day.hours<5||day.hours>=20?'night':day.hours<7?'blue':day.hours<16?'morning':day.hours<18?'golden':'blue';
  document.querySelectorAll('[data-time]').forEach(button=>button.classList.toggle('selected',button.dataset.time===phase));
  $('#time-label').textContent=day.hours<5||day.hours>=20?'星夜':day.hours<7?'曙光':day.hours<16?'日光':day.hours<18?'夕照':'暮色';
- $('#altitude').innerHTML=`${Math.round(flight.y)} <small>M</small>`;
- $('#heading').textContent=`${String(Math.round(headingDegrees(flight.heading))%360).padStart(3,'0')}°`;
- $('#airspeed').innerHTML=`${Math.round(flight.speed)} <small>KT</small>`;
+ altitudeDial.update(flight.y,elapsed);
+ headingDial.update(headingDegrees(flight.heading),elapsed);
+ airspeedDial.update(flight.speed,elapsed);
  if(soundscape&&soundOn)soundscape.update(flight,uniforms.uWind.value);
  frames++;fpsTime+=dt;
  if(fpsTime>1.5){canvas.dataset.fps=String(Math.round(frames/fpsTime));frames=0;fpsTime=0;}
  canvas.dataset.ready='true';
 }
-updateMode();animate();
+resize();updateMode();animate();
 // Expose a read-only snapshot for diagnostics and functional browser checks.
 window.endlessSea={getState:()=>({...flight,chapter,steeringMode,journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};
