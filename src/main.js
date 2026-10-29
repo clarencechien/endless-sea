@@ -4,6 +4,7 @@ import { vertexShader, fragmentShader } from './ocean.js';
 import { createPlane } from './plane.js';
 import { createJourney, advanceJourney, journeyState, setJourneyHour, selectJourneyChapter, moodAtHour } from './journey.js';
 import { CHAPTERS } from './chapters.js';
+import { RollingCounter } from './counter.js';
 import { TiltController } from './tilt.js';
 import { Soundscape } from './audio.js';
 import { encodeMidi } from './score.js';
@@ -13,13 +14,18 @@ import { createFlight, updateFlight, headingDegrees } from './flight.js';
 
 const $ = s => document.querySelector(s);
 const canvas = $('#world');
+const mobileInput=matchMedia('(pointer: coarse)').matches;
+let steeringMode=mobileInput?'tilt':'keyboard';
+const beatCounter=new RollingCounter($('#dream-beats'));
+if(mobileInput)document.body.classList.add('mobile-input');
 const tilt=new TiltController(message=>{
  $('#tilt-status').textContent=message;
- $('#tilt-toggle').textContent=tilt.enabled?'關閉體感操控':'開啟體感操控';
+ $('#tilt-toggle').textContent=tilt.enabled?'關閉體感':'啟用體感';
  $('#tilt-toggle').setAttribute('aria-pressed',String(tilt.enabled));
  $('#tilt-calibrate').disabled=!tilt.neutral;
+ if(flight.flying&&steeringMode==='tilt'){flight.autopilot=!(tilt.enabled&&tilt.neutral);updateMode();}
 });
-$('#tilt-toggle').onclick=async()=>{const button=$('#tilt-toggle');button.disabled=true;try{if(tilt.enabled)tilt.disable();else await tilt.enable();}finally{button.disabled=false;}};
+$('#tilt-toggle').onclick=async()=>{const button=$('#tilt-toggle');button.disabled=true;try{if(tilt.enabled){steeringMode='cruise';tilt.disable();flight.autopilot=true;updateMode();}else{steeringMode='tilt';await tilt.enable();}}finally{button.disabled=false;}};
 $('#tilt-calibrate').onclick=()=>tilt.calibrate();
 let renderer;
 try {
@@ -57,12 +63,15 @@ let frames=0,fpsTime=0;
 function updateMode(){
  $('#autopilot').classList.toggle('active',flight.autopilot);
  $('#autopilot').setAttribute('aria-pressed',String(flight.autopilot));
- $('#mode-label').firstChild.textContent=!flight.flying?'等待起飛':flight.autopilot?'自在巡航':'手動飛行';
- $('#mode-sub').textContent=!flight.flying?'THE SKY IS YOURS':flight.autopilot?'FOLLOW THE HORIZON':'YOU HAVE THE CONTROLS';
+ $('#mode-label').firstChild.textContent=!flight.flying?'準備出發':flight.autopilot?'自在巡航':tilt.enabled?'隨你傾斜':'自由飛行';
+
 }
-function takeFlight(){flight.flying=true;document.body.classList.add('flying');$('#flying-note').hidden=false;$('#intro').inert=true;$('#guide').close();if(matchMedia('(pointer: coarse)').matches)$('#touch-controls').hidden=false;updateMode();}
+let noteTimer;
+function showFlightNote(){clearTimeout(noteTimer);$('#flying-note').hidden=false;$('#flying-note').classList.remove('note-faded');noteTimer=setTimeout(()=>$('#flying-note').classList.add('note-faded'),6500);}
+function startFlight(){if(flight.flying)return;flight.flying=true;document.body.classList.add('flying');showFlightNote();$('#intro').inert=true;$('#guide').close();updateMode();}
+async function takeFlight(){startFlight();if(mobileInput){steeringMode='tilt';await tilt.enable();}}
 $('#fly').onclick=takeFlight;
-$('#guide-fly').onclick=takeFlight;
+$('#guide-fly').onclick=()=>{if(flight.flying)$('#guide').close();else takeFlight();};
 $('#help').onclick=()=>$('#guide').showModal();
 $('#close-guide').onclick=()=>$('#guide').close();
 $('#guide').addEventListener('click',e=>{if(e.target===$('#guide')){const b=$('#guide').getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)$('#guide').close();}});
@@ -70,11 +79,17 @@ $('#settings').onclick=()=>{$('#settings-panel').hidden=!$('#settings-panel').hi
 $('.close-panel').onclick=()=>$('#settings-panel').hidden=true;
 $('#quality').onchange=e=>{quality=Number(e.target.value);resize();};
 $('#wind').oninput=e=>uniforms.uWind.value=Number(e.target.value);
-$('#autopilot').onclick=()=>{if(!flight.flying)takeFlight();flight.autopilot=!flight.autopilot;updateMode();};
+$('#autopilot').onclick=async()=>{
+ if(!flight.flying){steeringMode='cruise';startFlight();flight.autopilot=true;updateMode();return;}
+ if(!flight.autopilot){steeringMode='cruise';flight.autopilot=true;tilt.pause();}
+ else if(mobileInput){steeringMode='tilt';if(tilt.enabled){tilt.calibrate();flight.autopilot=!tilt.neutral;}else await tilt.enable();}
+ else {steeringMode='keyboard';flight.autopilot=false;}
+ updateMode();
+};
 for(const button of document.querySelectorAll('[data-time]'))button.onclick=()=>{
  const mood=button.dataset.time;setJourneyHour(journey,{morning:8,golden:17,blue:19.5,night:0}[mood]);targetMood={morning:0,golden:1,blue:2,night:3}[mood];
  document.querySelectorAll('[data-time]').forEach(b=>b.classList.toggle('selected',b===button));
- $('#time-label').textContent={morning:'MORNING LIGHT',golden:'GOLDEN HOUR',blue:'BLUE HOUR',night:'STARLIT NIGHT'}[mood];
+ $('#time-label').textContent={morning:'晨光',golden:'夕照',blue:'暮色',night:'星夜'}[mood];
 };
 function toggleUI(){document.body.classList.toggle('ui-hidden');}
 $('#hide-ui').onclick=toggleUI;
@@ -92,19 +107,15 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 window.addEventListener('blur',()=>{keys.clear();tilt.pause();});
 document.addEventListener('visibilitychange',()=>{keys.clear();tilt.pause();clock.getDelta();if(soundscape)soundscape.visibility(document.hidden);});
-for(const button of document.querySelectorAll('[data-key]')){
- button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);keys.add(button.dataset.key);});
- for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,()=>keys.delete(button.dataset.key));
-}
 $('#sound').onclick=async()=>{
  try{
  if(!soundscape){soundscape=new Soundscape(()=>journeyState(journey).elapsed);soundscape.setChapter(chapter);for(const input of document.querySelectorAll('[data-mix]'))soundscape.setLevel(input.dataset.mix,Number(input.value));}
  await soundscape.setEnabled(!soundOn);soundOn=soundscape.enabled;
  $('#sound').setAttribute('aria-label',soundOn?'關閉環境音':'開啟環境音');
  $('#sound').setAttribute('aria-pressed',String(soundOn));
- $('#sound-status').textContent=soundOn?'配樂與環境音播放中':'點右上喇叭，開啟配樂與環境音';
+ $('#sound-status').textContent=soundOn?'聲音已開啟':'點喇叭，聽聽海。';
  $('#sound').innerHTML=soundOn?'<svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14"/></svg>':'<svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l5 6m0-6-5 6"/></svg>';
- }catch{$('#sound-status').textContent='聲音未能啟動，請再次點擊喇叭。';}
+ }catch{$('#sound-status').textContent='請再點一次喇叭。';}
 };
 for(const input of document.querySelectorAll('[data-mix]'))input.oninput=()=>soundscape?.setLevel(input.dataset.mix,Number(input.value));
 $('#download-midi').onclick=()=>{const url=URL.createObjectURL(new Blob([encodeMidi(chapter)],{type:'audio/midi'}));const a=document.createElement('a');a.href=url;a.download=`endless-sea-chapter-${chapter}.mid`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
@@ -115,9 +126,8 @@ function applyChapter(next,automatic=false){
  scene.remove(islands);disposeIslands(islands);islands=createIslands(chapter);islands.visible=chapter>1;scene.add(islands);
  resetFlight();soundscape?.setChapter(chapter);$('#chapter-select').value=String(chapter);
  $('#intro h1').innerHTML=info.title;$('#intro > p').innerHTML=info.description;
- $('.scene-label > div').innerHTML=`${info.location}<small>CHAPTER 0${chapter} · ${info.name}</small>`;
- $('#flying-note').innerHTML=`${info.note}<span>${info.poem}</span>`;
- if(automatic){$('#chapter-notice').textContent=`CHAPTER 0${chapter} · ${info.name}`;$('#chapter-notice').hidden=false;clearTimeout(chapterNoticeTimer);chapterNoticeTimer=setTimeout(()=>$('#chapter-notice').hidden=true,6500);}
+ $('#flying-note').textContent=info.note;if(flight.flying)showFlightNote();
+ if(automatic){$('#chapter-notice').textContent=`0${chapter} · ${info.name}`;$('#chapter-notice').hidden=false;clearTimeout(chapterNoticeTimer);chapterNoticeTimer=setTimeout(()=>$('#chapter-notice').hidden=true,6500);}
 }
 $('#chapter-select').onchange=e=>{selectJourneyChapter(journey,Number(e.target.value));applyChapter(Number(e.target.value));};
 const fullscreenButton=$('#fullscreen');
@@ -134,7 +144,7 @@ function animate(){
  const elapsed=clock.getDelta();const dt=Math.min(elapsed,.05);
  advanceJourney(journey,elapsed);const day=journeyState(journey);uniforms.uDayHours.value=day.hours;targetMood=moodAtHour(day.hours);
  if(day.chapter!==chapter)applyChapter(day.chapter,true);
- updateFlight(flight,keys,dt,flight.flying&&tilt.enabled?tilt.output:{});if(chapter>1)keepAboveTerrain(flight,chapter);updateMode();
+ updateFlight(flight,keys,dt,flight.flying&&tilt.enabled&&steeringMode==='tilt'&&!flight.autopilot?tilt.output:{});if(chapter>1)keepAboveTerrain(flight,chapter);updateMode();
  if(chapter>1){const origin=terrainOrigin(flight.x,flight.z);islands.position.set(origin.x,0,origin.z);islandsForChapter(chapter).forEach((i,index)=>uniforms.uIslands.value[index].set(i.x+origin.x,i.z+origin.z,i.rx,i.rz));}
  plane.position.set(flight.x,flight.y+Math.sin(flight.elapsed*1.2)*.13,flight.z);
  plane.rotation.set(flight.pitch,flight.heading,flight.bank,'YXZ');
@@ -152,13 +162,12 @@ function animate(){
  islands.userData.material.uniforms.mood.value=uniforms.uMood.value;
  const mood=uniforms.uMood.value;sun.position.set(-Math.cos((day.hours-6)/24*Math.PI*2)*680,Math.sin((day.hours-6)/24*Math.PI*2)*550,-1000);sun.color.setRGB(1,.91-Math.min(mood,1)*.12,.76-Math.min(mood,1)*.19);sun.intensity=Math.max(.08,3.2-Math.max(0,mood-1)*1.55);ambient.intensity=Math.max(.28,2.25-Math.max(0,mood-1)*.98);
  renderer.clear();renderer.render(backgroundScene,backgroundCamera);renderer.clearDepth();renderer.render(scene,camera);
- $('#dream-beats').textContent=day.beats.toLocaleString('zh-TW');
- $('#beat-dot').style.opacity=String(.35+.65*Math.exp(-day.beatPhase*5));
+ beatCounter.update(day.beats);
  const hour=Math.floor(day.hours),minute=Math.floor((day.hours-hour)*60);
  $('#world-time').textContent=`${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')} · 第 ${day.day} 日`;
  const phase=day.hours<5||day.hours>=20?'night':day.hours<7?'blue':day.hours<16?'morning':day.hours<18?'golden':'blue';
  document.querySelectorAll('[data-time]').forEach(button=>button.classList.toggle('selected',button.dataset.time===phase));
- $('#time-label').textContent=day.hours<5||day.hours>=20?'STARLIT NIGHT':day.hours<7?'FIRST LIGHT':day.hours<16?'DAYLIGHT':day.hours<18?'GOLDEN HOUR':'BLUE HOUR';
+ $('#time-label').textContent=day.hours<5||day.hours>=20?'星夜':day.hours<7?'曙光':day.hours<16?'日光':day.hours<18?'夕照':'暮色';
  $('#altitude').innerHTML=`${Math.round(flight.y)} <small>M</small>`;
  $('#heading').textContent=`${String(Math.round(headingDegrees(flight.heading))%360).padStart(3,'0')}°`;
  $('#airspeed').innerHTML=`${Math.round(flight.speed)} <small>KT</small>`;
@@ -169,4 +178,4 @@ function animate(){
 }
 updateMode();animate();
 // Expose a read-only snapshot for diagnostics and functional browser checks.
-window.endlessSea={getState:()=>({...flight,chapter,journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};
+window.endlessSea={getState:()=>({...flight,chapter,steeringMode,journey:journeyState(journey),tilt:tilt.snapshot(),audio:soundscape?.snapshot()??null,renderer:'WebGL 2',mood:targetMood,wind:uniforms.uWind.value}),getRenderer:()=>renderer.info.render,getResources:()=>({...renderer.info.memory})};

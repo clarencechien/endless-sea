@@ -8,14 +8,15 @@ export function tiltAxes(sample,neutral,screenAngle=0){
 export class TiltController {
  constructor(onStatus){this.onStatus=onStatus;this.enabled=false;this.sample=null;this.neutral=null;this.output={roll:0,pitch:0};this.angle=0;this.receive=this.receive.bind(this);}
  async enable(){
-  if(!window.isSecureContext||!window.DeviceOrientationEvent){this.onStatus('此裝置不支援體感，請使用觸控方向鍵。');return;}
+  if(this.enabled){this.calibrate();return;}
+  if(!window.isSecureContext||!window.DeviceOrientationEvent){this.onStatus('此裝置無法使用體感，已為你開啟巡航。');return;}
   try{
-   if(typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission()!=='granted'){this.onStatus('未取得動作感測權限，仍可使用觸控方向鍵。');return;}
+   if(typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission()!=='granted'){this.onStatus('未取得體感權限，先自在巡航。');return;}
    this.enabled=true;this.sample=null;this.neutral=null;this.output={roll:0,pitch:0};
    window.addEventListener('deviceorientation',this.receive);
-   this.onStatus('請以舒適的姿勢握住手機，正在校準…');
-   this.timeout=setTimeout(()=>{if(!this.sample){this.disable();this.onStatus('未收到感測資料，請確認權限或使用觸控方向鍵。');}},5000);
-  }catch{this.onStatus('無法啟用體感，請檢查瀏覽器權限；觸控仍可使用。');}
+   this.onStatus('握好手機，正在校準。');
+   this.timeout=setTimeout(()=>{if(!this.sample){this.disable();this.onStatus('未收到體感訊號，先自在巡航。');}},5000);
+  }catch{this.onStatus('體感暫時無法使用，先自在巡航。');}
  }
  receive(event){
   if(!this.enabled||!Number.isFinite(event.beta)||!Number.isFinite(event.gamma))return;
@@ -28,8 +29,8 @@ export class TiltController {
   if(next.roll===0&&Math.abs(this.output.roll)<.02)this.output.roll=0;
   if(next.pitch===0&&Math.abs(this.output.pitch)<.02)this.output.pitch=0;
  }
- calibrate(){if(!this.sample)return;this.neutral={...this.sample};this.output={roll:0,pitch:0};this.onStatus('體感已啟用：左右轉彎，前後控制升降。');}
- disable(){clearTimeout(this.timeout);window.removeEventListener('deviceorientation',this.receive);this.enabled=false;this.neutral=null;this.sample=null;this.output={roll:0,pitch:0};this.onStatus('體感已關閉，可使用觸控方向鍵。');}
+ calibrate(){if(!this.sample)return;this.neutral={...this.sample};this.output={roll:0,pitch:0};this.onStatus('輕輕傾斜，就能轉向與升降。');}
+ disable(){clearTimeout(this.timeout);window.removeEventListener('deviceorientation',this.receive);this.enabled=false;this.neutral=null;this.sample=null;this.output={roll:0,pitch:0};this.onStatus('體感已關閉，讓飛機帶你走。');}
  pause(){this.neutral=null;this.output={roll:0,pitch:0};}
  snapshot(){return {enabled:this.enabled,calibrated:!!this.neutral,...this.output};}
 }
