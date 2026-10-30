@@ -1,4 +1,6 @@
 import './style.css';
+import './ui.css';
+import { createQuietUI } from './ui.js';
 import * as THREE from 'three';
 import { vertexShader, fragmentShader } from './ocean.js';
 import { createDream } from './dream.js';
@@ -61,6 +63,7 @@ const backgroundCamera=new THREE.Camera();
 let flight=createFlight();
 const journey=createJourney();
 const keys=new Set();
+const quietUI=createQuietUI(()=>keys.clear());
 let targetMood=1,quality=1.5;
 let soundscape,soundOn=false,chapter=1;
 let initialized=false;
@@ -80,11 +83,23 @@ function startFlight(){if(flight.flying)return;flight.flying=true;document.body.
 async function takeFlight(){startFlight();if(mobileInput){steeringMode='tilt';await tilt.enable();}}
 $('#fly').onclick=takeFlight;
 $('#guide-fly').onclick=()=>{if(flight.flying)$('#guide').close();else takeFlight();};
-$('#help').onclick=()=>$('#guide').showModal();
+$('#help').onclick=()=>{setSettings(false);quietUI.closeAll();keys.clear();$('#guide').showModal();};
 $('#close-guide').onclick=()=>$('#guide').close();
 $('#guide').addEventListener('click',e=>{if(e.target===$('#guide')){const b=$('#guide').getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)$('#guide').close();}});
-$('#settings').onclick=()=>{$('#settings-panel').hidden=!$('#settings-panel').hidden;};
-$('.close-panel').onclick=()=>$('#settings-panel').hidden=true;
+function setSettings(open,restoreFocus=false){
+ quietUI.closeAll();keys.clear();$('#settings-panel').hidden=!open;
+ $('#settings').setAttribute('aria-expanded',String(open));
+ if(open)$('#quality-trigger').focus({preventScroll:true});
+ if(restoreFocus)$('#settings').focus({preventScroll:true});
+}
+$('#settings').onclick=()=>setSettings($('#settings-panel').hidden);
+$('.close-panel').onclick=()=>setSettings(false,true);
+document.addEventListener('pointerdown',e=>{
+ if(!$('#settings-panel').hidden&&!e.target.closest('#settings-panel, #settings, .sea-options'))setSettings(false);
+});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&!e.defaultPrevented&&!$('#settings-panel').hidden){setSettings(false,true);e.preventDefault();}
+});
 $('#quality').onchange=e=>{quality=Number(e.target.value);resize();};
 $('#wind').oninput=e=>uniforms.uWind.value=Number(e.target.value);
 $('#autopilot').onclick=async()=>{
@@ -99,11 +114,12 @@ for(const button of document.querySelectorAll('[data-time]'))button.onclick=()=>
  document.querySelectorAll('[data-time]').forEach(b=>b.classList.toggle('selected',b===button));
  $('#time-label').textContent={morning:'晨光',golden:'夕照',blue:'暮色',night:'星夜'}[mood];
 };
-function toggleUI(){document.body.classList.toggle('ui-hidden');}
+function toggleUI(){setSettings(false);quietUI.closeAll();document.body.classList.toggle('ui-hidden');}
 $('#hide-ui').onclick=toggleUI;
 $('#restore-ui').onclick=toggleUI;
 window.addEventListener('keydown',e=>{
- if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||$('#guide').open)return;
+ if(e.defaultPrevented||e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||e.target.closest('[role=combobox]')||!$('#settings-panel').hidden||$('#guide').open)return;
+ if((e.key===' '||e.key==='Enter')&&e.target.closest('button'))return;
  const k=e.key.toLowerCase();
  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
  if(e.repeat){keys.add(k);return;}
@@ -133,7 +149,7 @@ function applyChapter(next,automatic=false){
  if(!automatic){clearTimeout(chapterNoticeTimer);$('#chapter-notice').hidden=true;}
  chapter=next;const info=CHAPTERS[chapter-1];uniforms.uChapter.value=chapter;
  scene.remove(islands);disposeIslands(islands);islands=createIslands(chapter);islands.visible=chapter>1;scene.add(islands);
- resetFlight();soundscape?.setChapter(chapter);$('#chapter-select').value=String(chapter);
+ resetFlight();soundscape?.setChapter(chapter);$('#chapter-select').value=String(chapter);quietUI.sync('chapter-select');
  $('#intro h1').innerHTML=info.title;$('#intro > p').innerHTML=info.description;
  $('#flying-note').textContent=info.note;if(flight.flying&&!automatic)showFlightNote();if(automatic){clearTimeout(noteTimer);$('#flying-note').hidden=true;}
  if(automatic){$('#chapter-notice').textContent=`0${chapter} · ${info.name}`;$('#chapter-notice').hidden=false;clearTimeout(chapterNoticeTimer);chapterNoticeTimer=setTimeout(()=>$('#chapter-notice').hidden=true,6500);}
@@ -141,7 +157,7 @@ function applyChapter(next,automatic=false){
 $('#chapter-select').onchange=e=>{selectJourneyChapter(journey,Number(e.target.value));applyChapter(Number(e.target.value));};
 const fullscreenButton=$('#fullscreen');
 function syncFullscreen(){const active=!!document.fullscreenElement;fullscreenButton.setAttribute('aria-pressed',String(active));fullscreenButton.setAttribute('aria-label',active?'退出全螢幕':'進入全螢幕');fullscreenButton.title=active?'退出全螢幕（Esc）':'進入全螢幕';}
-fullscreenButton.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();syncFullscreen();}catch{$('#sound-status').textContent='此瀏覽器無法進入全螢幕，可用 H 隱藏介面。';$('#settings-panel').hidden=false;}};
+fullscreenButton.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();syncFullscreen();}catch{$('#sound-status').textContent='此瀏覽器無法進入全螢幕，可用 H 隱藏介面。';setSettings(true);}};
 if(!document.fullscreenEnabled){fullscreenButton.disabled=true;fullscreenButton.title='此瀏覽器不支援全螢幕，可使用隱藏介面';}
 document.addEventListener('fullscreenchange',syncFullscreen);syncFullscreen();
 function resize(){
@@ -187,7 +203,7 @@ function animate(){
  const hour=Math.floor(day.hours),minute=Math.floor((day.hours-hour)*60);
  $('#world-time').textContent=`${String(hour).padStart(2,'0')}:${String(minute).padStart(2,'0')} · 第 ${day.day} 日`;
  const phase=day.hours<5||day.hours>=20?'night':day.hours<7?'blue':day.hours<16?'morning':day.hours<18?'golden':'blue';
- document.querySelectorAll('[data-time]').forEach(button=>button.classList.toggle('selected',button.dataset.time===phase));
+ document.querySelectorAll('[data-time]').forEach(button=>{const selected=button.dataset.time===phase;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
  $('#time-label').textContent=day.hours<5||day.hours>=20?'星夜':day.hours<7?'曙光':day.hours<16?'日光':day.hours<18?'夕照':'暮色';
  altitudeDial.update(flight.y,elapsed);
  headingDial.update(headingDegrees(flight.heading),elapsed);

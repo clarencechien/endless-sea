@@ -1,0 +1,119 @@
+/* Warm paper, sea glass and a single quiet line weight across all controls. */
+:root {
+ --ui-ink: #f3ead5;
+ --ui-muted: #d6e0d9b3;
+ --ui-line: #e5e5cd29;
+ --ui-accent: #e5d3aa;
+ --ui-surface: linear-gradient(145deg, #345158f5, #18363fee);
+ --ui-shadow: 0 16px 48px #06252f38, inset 0 1px 0 #fff7dc0b;
+}
+button, a, input, select {touch-action: manipulation}
+button {transition: background-color .22s, border-color .22s, color .22s, box-shadow .22s}
+button:hover {filter: none}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+ outline: 1px solid var(--ui-accent); outline-offset: 4px;
+}
+button:disabled {cursor: default; opacity: .35}
+.icon-button {width: 40px; height: 44px; padding: 10px; border: 1px solid transparent; border-radius: 9px; color: #f5ecdac9}
+.icon-button svg {width: 20px; height: 20px}
+.icon-button[aria-pressed=true], .icon-button[aria-expanded=true] {background: #f5e9ca12; border-color: var(--ui-line); color: var(--ui-ink)}
+nav {gap: 6px}
+.outline-button {min-height: 40px; border-color: var(--ui-line); border-radius: 8px; color: var(--ui-ink); letter-spacing: .8px; background: #f5e9ca05}
+.fly-button {border: 1px solid #fffae348; border-radius: 8px; background: linear-gradient(135deg,#f3e9d2,#e6d6b4); box-shadow: 0 6px 24px #102f3821, inset 0 1px 0 #fff8}
+.fly-button b {opacity: .6; font-size: 18px}
+.chapter {gap: 8px; margin-left: 0}
+.chapter .live-dot {opacity: .65; width: 4px; height: 4px; box-shadow: none}
+/* The native select stays available for state updates, without a second tab stop. */
+.native-select {position: absolute!important; width: 1px!important; height: 1px!important; min-height: 0!important; padding: 0!important; margin: 0!important; border: 0!important; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none}
+.sea-select {display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 44px; width: 100%; padding: 10px 12px; border: 1px solid var(--ui-line); border-radius: 8px; color: var(--ui-ink); background: #f6ebcf06; font-size: 12px; letter-spacing: .8px; text-align: left}
+.sea-select svg {width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1; opacity: .6; transition: transform .22s; flex-shrink: 0}
+.sea-select[aria-expanded=true] {border-color: #e5d3aa66; background: #f6ebcf0b}
+.sea-select[aria-expanded=true] svg {transform: rotate(180deg)}
+.chapter .sea-select {width: auto; padding: 8px 10px; font-size: 11px; letter-spacing: 1.2px; border-color: transparent; background: transparent; gap: 14px}
+.chapter .sea-select[aria-expanded=true] {background: #1d3b4559; border-color: var(--ui-line)}
+.sea-options {position: fixed; z-index: 30; padding: 6px; border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-surface); color: var(--ui-ink); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); box-shadow: var(--ui-shadow); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #d5d7c333 transparent; animation: menu-appear .18s ease-out}
+.sea-option {display: flex; align-items: center; gap: 13px; position: relative; min-height: 44px; padding: 10px 34px 10px 13px; border: 1px solid transparent; border-radius: 7px; font-size: 12px; letter-spacing: 1px; cursor: pointer; color: var(--ui-muted)}
+.sea-option.is-active {background: #f6ebcf0c; color: var(--ui-ink)}
+.sea-option[aria-selected=true] {color: #f5e1b8; background: #f6ebcf08}
+.sea-option[aria-selected=true]::after {content: ''; position: absolute; right: 15px; width: 4px; height: 4px; border-radius: 50%; background: #ead8ad; box-shadow: 0 0 7px #efdfb22b}
+.option-number {font-size: 10px; letter-spacing: 1px; opacity: .45; font-variant-numeric: tabular-nums}
+.popover {width: 304px; max-width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)); padding: 22px; border: 1px solid var(--ui-line); border-radius: 14px; background: var(--ui-surface); box-shadow: var(--ui-shadow); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); overscroll-behavior: contain; scrollbar-color: #d5d7c333 transparent; animation: menu-appear .2s ease-out}
+.panel-title {font-family: 'Noto Serif TC','Songti TC',Georgia,serif; font-weight: 400; font-size: 18px; letter-spacing: 2px; margin-bottom: 18px; min-height: 32px}
+.close-panel, #close-guide {width: 36px; height: 36px; border-radius: 8px; font: 24px/1 Arial,sans-serif; font-weight: 200; color: #f3ead599}
+.close-panel {margin: -7px -7px -7px 0}
+.quality-field {display: flex; align-items: center; justify-content: space-between; gap: 20px}
+.field-label, .popover label {font-size: 11px; color: var(--ui-muted); letter-spacing: 1px}
+.quality-field .sea-select {width: 162px; font-size: 11px}
+.popover label {margin-top: 12px}
+.popover .wind-field, .mixer label {display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 36px}
+.popover input[type=range] {width: 162px; min-width: 0; height: 32px; padding: 0; margin: 0; border: 0; border-radius: 0; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; accent-color: var(--ui-accent)}
+.popover input[type=range]::-webkit-slider-runnable-track {height: 2px; border-radius: 2px; background: linear-gradient(to right, #e5d3aaa8 0 var(--range-fill), #d9e1d525 var(--range-fill) 100%)}
+.popover input[type=range]::-webkit-slider-thumb {appearance: none; -webkit-appearance: none; width: 10px; height: 10px; border: 1px solid #f8edd29c; border-radius: 50%; background: #e1d6bb; margin-top: -4px; box-shadow: 0 0 0 4px #e5d3aa08; transition: box-shadow .2s}
+.popover input[type=range]::-moz-range-track {height: 2px; border-radius: 2px; background: #d9e1d525}
+.popover input[type=range]::-moz-range-progress {height: 2px; background: #e5d3aaa8}
+.popover input[type=range]::-moz-range-thumb {width: 9px; height: 9px; border: 1px solid #f8edd29c; border-radius: 50%; background: #e1d6bb; box-shadow: 0 0 0 4px #e5d3aa08}
+.popover input[type=range]:focus-visible {outline-offset: 0; border-radius: 5px}
+.mixer, .tilt-settings {border-top: 1px solid var(--ui-line); margin-top: 18px; padding-top: 19px}
+.mixer h3, .tilt-settings h3 {font-size: 12px; font-weight: 400; letter-spacing: 1.5px; margin: 0; color: var(--ui-ink)}
+.mixer #sound-status, .tilt-settings p {font-size: 10px; color: var(--ui-muted); opacity: .8; margin: 8px 0 13px; line-height: 1.8; letter-spacing: .5px}
+.mixer label {margin-top: 2px}
+.mixer .outline-button {width: 100%; margin: 15px 0 0; font-size: 10px; min-height: 40px}
+.tilt-settings {display: none}
+.mobile-input .tilt-settings {display: block}
+.tilt-settings .outline-button {min-height: 40px; padding: 8px 12px; margin-right: 5px}
+.autopilot {border-radius: 8px; padding: 7px 8px}
+.toggle {height: 18px; width: 32px; padding: 3px; margin-left: 4px; background: #19353c33; border-color: #e1e4cf38}
+.toggle i {width: 10px; height: 10px; background: #dce3d394; transition: transform .35s cubic-bezier(.2,.7,.2,1), background-color .35s}
+.active .toggle {background: #e5d3aa18; border-color: #e5d3aa65}
+.active .toggle i {background: #e9dabb; transform: translateX(13px)}
+.time-picker {gap: 5px}
+.time-picker>button {width: 38px; height: 38px; padding: 9px; position: relative; border-color: transparent}
+.time-picker>button::after {content: ''; position: absolute; inset: 4px; border: 1px solid transparent; border-radius: 50%; transition: border-color .3s}
+.time-picker>button.selected {border-color: transparent}
+.time-picker>button.selected::after {border-color: #f1dfb88c}
+.time-orb {box-shadow: inset 0 0 6px #fff2, 0 1px 6px #092c3626}
+.time-picker i {background: var(--ui-line)}
+dialog {border-color: var(--ui-line); border-radius: 16px; background: var(--ui-surface); box-shadow: var(--ui-shadow); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #d5d7c333 transparent}
+dialog::backdrop {background: #092c394a; backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px)}
+dialog h2 {letter-spacing: 1.5px}
+.control-row {border-color: #e5e5cd16; color: var(--ui-muted)}
+kbd, .key {border-color: #e5e5cd30; background: #f6ebcf05; border-radius: 5px}
+#restore-ui {border-color: var(--ui-line); border-radius: 8px; min-height: 40px; color: var(--ui-ink)}
+#hide-ui {min-height: 30px; border-radius: 6px}
+#chapter-notice {border-color: var(--ui-line); border-radius: 10px; background: var(--ui-surface); font-size: 12px; letter-spacing: 2px; box-shadow: 0 8px 24px #082a3218}
+@media(hover:hover) {
+ .icon-button:hover:not(:disabled), .outline-button:hover:not(:disabled), .close-panel:hover, #close-guide:hover, .autopilot:hover {background-color: #f6ebcf10; border-color: #e5d3aa59}
+ .sea-select:hover {background-color: #f6ebcf0c; border-color: #e5d3aa59}
+ .fly-button:hover {box-shadow: 0 6px 28px #102f382b, inset 0 0 0 1px #fff6}
+ .popover input[type=range]:hover::-webkit-slider-thumb {box-shadow: 0 0 0 5px #e5d3aa12}
+}
+@keyframes menu-appear {from {opacity: 0} to {opacity: 1}}
+@media(max-width:600px) {
+ nav {gap: 0}
+ .icon-button {width: 38px; height: 44px; padding: 9px}
+ .chapter .sea-select {font-size: 10px; padding-left: 5px; gap: 12px}
+ .time-picker {right: max(14px,calc(env(safe-area-inset-right) + 8px)); gap: 2px}
+ .time-picker>button {width: 44px; height: 44px; padding: 12px}
+ .time-picker>button::after {inset: 7px}
+ .time-picker i {height: 18px}
+ .popover {right: max(16px,calc(env(safe-area-inset-right) + 10px)); padding: 20px}
+ .autopilot {font-size: 10px; gap: 6px; padding: 7px 0 7px 5px}
+ .toggle {margin-left: 0; width: 30px}
+ .active .toggle i {transform: translateX(11px)}
+}
+@media(max-width:360px) {
+ .icon-button {width: 34px; padding: 7px}
+ .popover {padding: 18px}
+ .popover input[type=range], .quality-field .sea-select {width: 150px}
+}
+@media(max-height:500px) {
+ footer {bottom: calc(38px + env(safe-area-inset-bottom))}
+ .time-picker {top: 22%; gap: 0}
+ .time-picker>button {width: 36px; height: 36px; padding: 8px}
+ .time-picker>button::after {inset: 3px}
+ .time-picker i, #time-label {display: none}
+}
+@media(prefers-reduced-motion:reduce) {
+ button, .sea-select svg, .toggle i, .time-picker>button::after {transition: none}
+ .popover, .sea-options {animation: none}
+}

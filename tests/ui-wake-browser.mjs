@@ -25,8 +25,13 @@ try{
  }
  assert.ok(await page.evaluate(()=>window.endlessSea.getResources().textures)<=7,'Old elevation textures must be disposed across chapters');
  await page.setViewportSize({width:960,height:640});await page.locator('#chapter-select').selectOption('1');
+ // Keep the real renderer running at lower resolution while filling the bounded
+ // history on software GPUs; layout checks and screenshots use the full viewport.
+ await page.locator('#world').evaluate(c=>{c.style.width='440px';c.style.height='300px';});
  await page.waitForFunction(()=>window.endlessSea.getState().wake.samples.every(n=>n===90),{},{timeout:60000});
  await page.keyboard.down('a');await page.waitForFunction(()=>window.endlessSea.getState().bank>.3);await page.keyboard.up('a');
+ await page.locator('#world').evaluate(c=>{c.style.removeProperty('width');c.style.removeProperty('height');});
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  await page.screenshot({path:`${artifacts}/paper-wake.png`});
  const wake=await page.evaluate(()=>window.endlessSea.getState().wake);assert.equal(wake.segments,178);
  await page.keyboard.press('r');await page.waitForFunction(()=>window.endlessSea.getState().wake.samples.every(n=>n<20));

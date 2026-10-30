@@ -1,0 +1,92 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
+const artifacts=process.env.ARTIFACTS_DIR||'/tmp/endless-sea-artifacts';
+await mkdir(artifacts,{recursive:true});
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const errors=[];
+const url=process.env.APP_URL||'http://127.0.0.1:5174';
+function watch(page){page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});}
+async function withinViewport(page,selector){
+ const box=await page.locator(selector).boundingBox(),size=page.viewportSize();
+ assert.ok(box && box.x>=0 && box.y>=0 && box.x+box.width<=size.width+1 && box.y+box.height<=size.height+1,`${selector} fits ${size.width}x${size.height}: ${JSON.stringify(box)}`);
+}
+try{
+ const page=await browser.newPage({viewport:{width:1100,height:760}});watch(page);
+ await page.addInitScript(()=>{const now=performance.now.bind(performance);window.timeOffset=0;performance.now=()=>now()+window.timeOffset;});
+ await page.goto(url,{waitUntil:'networkidle'});
+ const chapter=page.locator('#chapter-select-trigger'),quality=page.locator('#quality-trigger');
+ await chapter.click();
+ await page.screenshot({path:`${artifacts}/ui-chapters.png`});
+ await withinViewport(page,'#chapter-select-options');
+ await page.keyboard.press('ArrowDown');
+ assert.equal(await page.evaluate(()=>window.endlessSea.getState().chapter),1,'Arrows preview without committing');
+ await page.keyboard.press('Escape');
+ assert.equal(await chapter.getAttribute('aria-expanded'),'false');
+ assert.equal(await chapter.evaluate(el=>el===document.activeElement),true);
+ await page.keyboard.press('Enter');await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>window.endlessSea.getState().chapter),2);
+ assert.match(await chapter.textContent(),/海島/);
+ await page.evaluate(()=>window.timeOffset+=1440_000);
+ await page.waitForFunction(()=>window.endlessSea.getState().chapter===3);
+ assert.match(await chapter.textContent(),/峽灣回聲/,'Automatic chapters update the visible control');
+ await chapter.click();await page.keyboard.press('Home');await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>window.endlessSea.getState().chapter),1);
+ await chapter.click();await page.keyboard.press('End');await page.keyboard.press('Tab');
+ assert.equal(await chapter.getAttribute('aria-expanded'),'false');
+ assert.equal(await page.evaluate(()=>window.endlessSea.getState().chapter),1,'Tab dismisses without applying the preview');
+ await page.locator('#settings').click();await quality.click();
+ await page.screenshot({path:`${artifacts}/ui-settings.png`});
+ await withinViewport(page,'#quality-options');
+ await page.locator('#quality-option-0').click();
+ assert.equal(await page.locator('#quality').inputValue(),'1');
+ assert.equal(await quality.evaluate(el=>el===document.activeElement),true);
+ await page.locator('#wind').focus();await page.keyboard.press('ArrowRight');
+ assert.equal(await page.evaluate(()=>window.endlessSea.getState().wind),.9);
+ assert.match(await page.locator('#wind').getAttribute('style'),/46\.15/);
+ await quality.click();await page.keyboard.press('Escape');
+ assert.equal(await page.locator('#settings-panel').isVisible(),true,'First Escape dismisses only the list');
+ await page.keyboard.press('Escape');
+ assert.equal(await page.locator('#settings-panel').isVisible(),false);
+ assert.equal(await page.locator('#settings').getAttribute('aria-expanded'),'false');
+ assert.equal(await page.locator('#settings').evaluate(el=>el===document.activeElement),true);
+ await page.locator('#settings').click();await page.locator('#world').click({position:{x:500,y:400}});
+ assert.equal(await page.locator('#settings-panel').isVisible(),false,'Outside tap closes settings');
+ await page.locator('#settings').focus();await page.keyboard.press('Space');
+ assert.equal(await page.locator('#settings-panel').isVisible(),true,'Buttons retain native Space activation');
+ await page.locator('#help').click();
+ assert.equal(await page.locator('#settings-panel').isVisible(),false);
+ assert.equal(await page.locator('#guide').evaluate(el=>el.open),true);
+ await page.keyboard.press('Escape');
+ // Existing diagnostic/native state paths still synchronize with the new controls.
+ await page.locator('#chapter-select').selectOption('2');
+ assert.match(await chapter.textContent(),/海島/);
+ await page.locator('#chapter-select').selectOption('1');
+ await page.close();
+ const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});watch(mobile);
+ await mobile.goto(url,{waitUntil:'networkidle'});
+ for(const [width,height] of [[390,844],[320,568],[844,390],[568,320]]){
+  await mobile.setViewportSize({width,height});
+  await mobile.locator('#chapter-select-trigger').tap();await withinViewport(mobile,'#chapter-select-options');
+  const option = width === 568 ? 4 : 1;
+  await mobile.locator(`#chapter-select-option-${option}`).scrollIntoViewIfNeeded();
+  await mobile.locator(`#chapter-select-option-${option}`).tap();
+  assert.equal(await mobile.evaluate(()=>window.endlessSea.getState().chapter),option + 1);
+  await mobile.locator('#chapter-select').selectOption('1');
+  await mobile.locator('#settings').tap();await withinViewport(mobile,'#settings-panel');
+  await mobile.locator('#quality-trigger').tap();await withinViewport(mobile,'#quality-options');
+  await mobile.locator('#quality-option-0').tap();
+  assert.equal(await mobile.locator('#quality').inputValue(),'1');
+  if(width===390)await mobile.screenshot({path:`${artifacts}/ui-mobile-settings.png`});
+  await mobile.locator('#download-midi').scrollIntoViewIfNeeded();await withinViewport(mobile,'#download-midi');
+  await mobile.locator('.close-panel').scrollIntoViewIfNeeded();await mobile.locator('.close-panel').tap();
+  assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth),width);
+  await mobile.locator('#help').tap();await withinViewport(mobile,'#guide');
+  await mobile.locator('#close-guide').tap();
+ }
+ await mobile.emulateMedia({reducedMotion:'reduce'});
+ await mobile.locator('#chapter-select-trigger').tap();
+ assert.equal(await mobile.locator('#chapter-select-options').evaluate(el=>getComputedStyle(el).animationName),'none');
+ assert.deepEqual(errors,[]);
+ console.log('PASS: keyboard preview/commit/dismiss, focus, automatic chapter sync, touch selection, sliders, outside close, Space activation, guide, reduced motion and reachable panels/options across four mobile sizes; no browser errors.');
+}finally{await browser.close();}
