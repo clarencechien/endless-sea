@@ -1,0 +1,20 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#253e37"><link rel="icon" href="./bird.svg"><title>林間 · Bird Forest — Endless Sea DLC</title></head><body>
+<div id="viewport"></div><div class="shade"></div>
+<header><a href="../" class="brand">⌁ <span>ENDLESS SEA<small>A LITTLE FURTHER</small></span></a><span class="chapter">DLC 01 · 林間</span><nav><button id="fullscreen" aria-label="全螢幕">⛶</button><button id="perf-toggle" aria-controls="telemetry" aria-expanded="true">效能</button><button id="settings" aria-label="設定與暫停">☷</button></nav></header>
+<main id="welcome"><span class="eyebrow">BIRD FOREST</span><h1>借一雙翅膀，<br><em>飛進樹的呼吸。</em></h1><p>沿著光，穿過一片青綠。</p><button id="start" class="primary">展翅 <span>↗</span></button><p id="boot-status" role="status">鍵盤或觸控，隨你飛。</p><button id="boot-settings" class="quiet">裝置與畫質 ↗</button></main>
+<aside id="telemetry" aria-label="即時效能"><div><span id="fps">—</span><small>FPS · 15 秒</small></div><p id="frame-stats">1% low — · p95 — ms</p><p id="gpu-stats">GPU N/A · JS N/A</p><p id="render-stats">等待啟動</p><p id="scene-stats">60 FPS 為目標，實機待測</p></aside>
+<div id="reticle" hidden>·</div><div id="flight-hint" hidden>WASD 轉向與升降 · Space 上升 · Ctrl 下降</div>
+<div id="touch" hidden><div id="look-zone" aria-label="拖曳環顧"></div><div id="stick" role="group" aria-label="飛行搖桿"><i></i><span>轉向</span></div><div class="vertical"><button id="up" aria-label="上升">↑</button><button id="down" aria-label="下降">↓</button></div></div>
+<footer><span id="flight-state">01 / 林間試飛</span><button id="pause" hidden>暫停</button><span id="run-status" role="status"></span></footer>
+<dialog id="panel" aria-labelledby="panel-title"><div class="panel-head"><h2 id="panel-title">隨風調整</h2><button id="close-panel" aria-label="關閉設定">×</button></div>
+<p class="muted">固定林區試飛。樹幹會擋住去路；枝葉是視覺效果。</p>
+<fieldset><legend>畫質</legend><div class="profiles"><button data-profile="Auto" aria-pressed="true">自動</button><button data-profile="Battery-Saver" aria-pressed="false">省電</button><button data-profile="Low" aria-pressed="false">低</button><button data-profile="Medium" aria-pressed="false">中</button><button data-profile="High" aria-pressed="false">高</button></div></fieldset>
+<label>渲染後端<select id="backend"><option value="auto">自動 · 優先 WebGPU</option><option value="webgl2">WebGL2 · 相容模式</option></select></label><p class="muted">後端切換會重新載入；畫質可即時調整。</p>
+<details><summary>裝置資訊</summary><pre id="device-info">開始後偵測；不依裝置名稱猜測效能。</pre></details>
+<details id="benchmark"><summary>飛行測試與報告</summary><p class="muted">固定種子 73129。暖機 15 秒，再記錄 60 秒；測試期間自動飛行。</p>
+<label>路線<select id="route"><option value="ground">ground · 林下</option><option value="dense">dense · 密林</option><option value="turn">turn · 急轉</option><option value="canopy">canopy · 樹冠</option><option value="speed">speed · 加速</option><option value="pause-resume">pause-resume · 停頓與恢復</option></select></label>
+<button id="run" class="primary">開始測試 <span>↗</span></button><div class="actions"><button id="copy">複製 JSON</button><button id="download">下載 JSON</button></div><p id="export-status" role="status"></p><textarea id="copy-fallback" aria-label="可手動複製的 JSON 報告" hidden readonly></textarea>
+<p class="muted">此版雙後端使用 instanced DAG LOD。HZB、software rasterizer、TAA 尚未接入；不宣稱與上游完整 Nanite 等效。</p><a href="./upstream/?scene=forest&amp;trees=2000&amp;bushes=0.5&amp;statues=0&amp;plaza=0&amp;music=0&amp;auto=0&amp;pr=1&amp;outpr=1&amp;shadows=0&amp;grass=0&amp;relief=0">上游原版與 A/B 說明 ↗</a></details>
+<div class="actions"><button id="reset">回到林間入口</button><button id="resume" class="primary">繼續飛 <span>↗</span></button></div></dialog>
+<section id="error" hidden role="alert"><h2>暫時飛不起來</h2><p id="error-message"></p><button id="retry" class="primary">重新啟動</button><button id="error-report">下載診斷</button><a href="../">回到海上</a></section>
+<script type="module" src="/src/bootstrap.js"></script></body></html>

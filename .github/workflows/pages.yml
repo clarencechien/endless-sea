@@ -23,9 +23,14 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            dlc/bird-forest/package-lock.json
       - run: npm ci
+      - run: npm --prefix dlc/bird-forest ci
       - run: npm test
-      - run: npm run build
+      - run: npm run test:forest
+      - run: npm run build:site
       - uses: actions/configure-pages@v5
         with:
           enablement: true
@@ -51,7 +56,7 @@ jobs:
           import os, time
           from html.parser import HTMLParser
           from urllib.request import urlopen
-          from urllib.parse import urljoin
+          from urllib.parse import urljoin, urlparse
 
           class Assets(HTMLParser):
               def __init__(self):
@@ -76,7 +81,19 @@ jobs:
                   for path in assets.paths:
                       with urlopen(urljoin(url, path), timeout=20) as response:
                           assert response.status == 200 and response.read(1), path
-                  print(f'Published page and {len(assets.paths)} assets verified: {url}')
+                  for route, title in [('forest/', 'Bird Forest'), ('forest/upstream/', 'Nanite')]:
+                      page_url = urljoin(url, route)
+                      with urlopen(page_url, timeout=20) as response:
+                          page_html = response.read().decode('utf-8')
+                      assert title in page_html, f'Unexpected page: {route}'
+                      route_assets = Assets()
+                      route_assets.feed(page_html)
+                      for path in route_assets.paths:
+                          if path.startswith('data:') or urlparse(urljoin(page_url, path)).netloc != urlparse(page_url).netloc:
+                              continue
+                          with urlopen(urljoin(page_url, path), timeout=20) as response:
+                              assert response.status == 200 and response.read(1), path
+                  print(f'Ocean, Bird Forest and pinned upstream pages/assets verified: {url}')
                   break
               except Exception:
                   if attempt == 11:

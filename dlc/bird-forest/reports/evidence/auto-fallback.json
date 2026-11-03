@@ -1,0 +1,192 @@
+{
+  "buildSHA": "fca1ee0bfb9492c8cfa15ad54487b53253315225",
+  "buildDirty": true,
+  "upstreamSHA": "500113d7b651d2eb96392ce87c96330bdec25e15",
+  "seed": 73129,
+  "deviceCategory": "keyboard device (unverified class)",
+  "capabilities": {
+    "secureContext": true,
+    "webgpuAPI": true,
+    "webgpuAdapter": true,
+    "webgl2API": true,
+    "webgl2Context": true,
+    "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "adapter": {
+      "vendor": "google",
+      "architecture": "swiftshader",
+      "description": ""
+    },
+    "deviceMemoryGB": 32,
+    "hardwareConcurrency": 5,
+    "touch": false,
+    "dpr": 1,
+    "viewport": [
+      640,
+      420
+    ],
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "refreshRateEstimateHz": 60
+  },
+  "backend": "webgl2",
+  "pipeline": "offline upstream cluster DAG cuts + instancing + side-view impostors",
+  "quality": {
+    "profile": "Auto",
+    "scale": 0.75,
+    "minScale": 0.55,
+    "maxScale": 1,
+    "far": 125,
+    "lod": 1,
+    "shadows": false
+  },
+  "resolution": {
+    "viewportCSS": [
+      640,
+      420
+    ],
+    "dpr": 1,
+    "outputPixels": [
+      640,
+      420
+    ],
+    "internalPixels": [
+      480,
+      315
+    ],
+    "upscaling": "bilinear spatial upscale; no TAA"
+  },
+  "scene": {
+    "visibleInstances": 303,
+    "impostors": 197,
+    "total": 2919,
+    "drawBatches": 14
+  },
+  "render": {
+    "calls": 41,
+    "frameCalls": 3,
+    "drawCalls": 26,
+    "triangles": 349998,
+    "points": 0,
+    "lines": 0,
+    "timestamp": 1971.69372
+  },
+  "initialLoad": {
+    "startToFirstFrameSubmitMS": 842.1000000238419,
+    "navigationToStartMS": 1419.5
+  },
+  "features": {
+    "gpuDrivenClusterCulling": false,
+    "HZB": false,
+    "softwareRasterizer": false,
+    "TAA": false,
+    "grass": false,
+    "relief": false,
+    "shadows": false
+  },
+  "performanceGate": "NOT VERIFIED on physical target devices",
+  "timestamp": "2026-11-03T09:12:11.187Z",
+  "windowSeconds": 15,
+  "definitions": {
+    "onePercentLow": "1000 / mean of slowest ceil(1% * N) frame intervals",
+    "droppedFrames": "estimated missed 60Hz intervals; not measured compositor drops",
+    "cpuJS": "synchronous simulation, culling and render submission; excludes asynchronous GPU work",
+    "gpu": "backend timestamp queries when available; null otherwise"
+  },
+  "live": {
+    "frames": 12,
+    "averageFPS": 1.069871526260888,
+    "onePercentLow": 0.3428649797709662,
+    "medianMS": 800,
+    "p95MS": 2916.6,
+    "droppedFrames": 661,
+    "cpuJSMS": 14.27500000099341,
+    "gpuMS": 1971.6937199999998
+  },
+  "peakJSHeapBytes": 23777179,
+  "errors": [
+    {
+      "stage": "init-webgpu",
+      "message": "OperationError: A valid external Instance reference no longer exists."
+    }
+  ],
+  "run": {
+    "path": "ground",
+    "started": 8601.100000023842,
+    "warmup": 1,
+    "duration": 3,
+    "samples": [
+      {
+        "time": 9990.6,
+        "ms": 783.3000000000011,
+        "cpu": 9.300000011920929,
+        "gpu": 1971.69372
+      },
+      {
+        "time": 10790.6,
+        "ms": 800,
+        "cpu": 15,
+        "gpu": 1971.69372
+      },
+      {
+        "time": 11823.9,
+        "ms": 1033.2999999999993,
+        "cpu": 10.400000035762787,
+        "gpu": 1971.69372
+      },
+      {
+        "time": 13107.2,
+        "ms": 1283.300000000001,
+        "cpu": 51.19999998807907,
+        "gpu": 1971.69372
+      }
+    ],
+    "route": [
+      {
+        "t": 0.6061999999761574,
+        "x": -9.233354441888533,
+        "y": 4.406196840326875,
+        "z": 135.15040000019073,
+        "yaw": -0.4214814052192879
+      },
+      {
+        "t": 1.3894999999761586,
+        "x": -6.305352763565855,
+        "y": 4.616033008581215,
+        "z": 128.88400000019072,
+        "yaw": -0.4507071127961887
+      },
+      {
+        "t": 2.1894999999761584,
+        "x": -3.129702854061192,
+        "y": 4.860339330991114,
+        "z": 122.48400000019073,
+        "yaw": -0.4684301133750198
+      },
+      {
+        "t": 3.2227999999761576,
+        "x": 1.096022850551979,
+        "y": 5.208250903171395,
+        "z": 114.21760000019074,
+        "yaw": -0.473316935733522
+      },
+      {
+        "t": 4.506099999976159,
+        "x": 6.245003811091506,
+        "y": 5.663480453857084,
+        "z": 103.95120000019074,
+        "yaw": -0.4511689720369909
+      }
+    ],
+    "interrupted": false,
+    "summary": {
+      "frames": 4,
+      "averageFPS": 1.0256673248031998,
+      "onePercentLow": 0.7792410192472525,
+      "medianMS": 800,
+      "p95MS": 1283.300000000001,
+      "droppedFrames": 230
+    },
+    "complete": true
+  },
+  "testEnvironment": "Headless Chromium with SwiftShader software rendering; NOT real phone/laptop validation",
+  "consoleErrors": []
+}

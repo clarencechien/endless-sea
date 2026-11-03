@@ -1,0 +1,1 @@
+export const refreshEstimate=new Promise(resolve=>{const samples=[];let last=null;function frame(now){if(document.hidden){resolve(null);return;}if(last!==null)samples.push(now-last);last=now;if(samples.length<40)requestAnimationFrame(frame);else{samples.sort((a,b)=>a-b);resolve(Math.round(1000/samples[Math.floor(samples.length*.2)]));}}requestAnimationFrame(frame);});

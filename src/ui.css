@@ -117,3 +117,5 @@ kbd, .key {border-color: #e5e5cd30; background: #f6ebcf05; border-radius: 5px}
  button, .sea-select svg, .toggle i, .time-picker>button::after {transition: none}
  .popover, .sea-options {animation: none}
 }
+
+.forest-link {display:block;margin:20px 0;color:var(--ui-accent);font-size:11px;letter-spacing:1px}

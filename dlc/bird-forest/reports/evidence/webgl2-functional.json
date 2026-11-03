@@ -1,0 +1,215 @@
+{
+  "buildSHA": "fca1ee0bfb9492c8cfa15ad54487b53253315225",
+  "buildDirty": true,
+  "upstreamSHA": "500113d7b651d2eb96392ce87c96330bdec25e15",
+  "seed": 73129,
+  "deviceCategory": "keyboard device (unverified class)",
+  "capabilities": {
+    "secureContext": true,
+    "webgpuAPI": false,
+    "webgpuAdapter": false,
+    "webgl2API": true,
+    "webgl2Context": true,
+    "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "adapter": null,
+    "deviceMemoryGB": 32,
+    "hardwareConcurrency": 5,
+    "touch": false,
+    "dpr": 1,
+    "viewport": [
+      640,
+      480
+    ],
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "refreshRateEstimateHz": 60
+  },
+  "backend": "webgl2",
+  "pipeline": "offline upstream cluster DAG cuts + instancing + side-view impostors",
+  "quality": {
+    "profile": "Battery-Saver",
+    "scale": 0.6,
+    "minScale": 0.55,
+    "maxScale": 1,
+    "far": 85,
+    "lod": 1.8,
+    "shadows": false
+  },
+  "resolution": {
+    "viewportCSS": [
+      640,
+      480
+    ],
+    "dpr": 1,
+    "outputPixels": [
+      640,
+      480
+    ],
+    "internalPixels": [
+      384,
+      288
+    ],
+    "upscaling": "bilinear spatial upscale; no TAA"
+  },
+  "scene": {
+    "visibleInstances": 161,
+    "impostors": 123,
+    "total": 2919,
+    "drawBatches": 14
+  },
+  "render": {
+    "calls": 74,
+    "frameCalls": 3,
+    "drawCalls": 26,
+    "triangles": 198988,
+    "points": 0,
+    "lines": 0,
+    "timestamp": 369.19595799999996
+  },
+  "initialLoad": {
+    "startToFirstFrameSubmitMS": 830.5,
+    "navigationToStartMS": 2490.399999976158
+  },
+  "features": {
+    "gpuDrivenClusterCulling": false,
+    "HZB": false,
+    "softwareRasterizer": false,
+    "TAA": false,
+    "grass": false,
+    "relief": false,
+    "shadows": false
+  },
+  "performanceGate": "NOT VERIFIED on physical target devices",
+  "timestamp": "2026-11-03T09:19:19.961Z",
+  "windowSeconds": 15,
+  "definitions": {
+    "onePercentLow": "1000 / mean of slowest ceil(1% * N) frame intervals",
+    "droppedFrames": "estimated missed 60Hz intervals; not measured compositor drops",
+    "cpuJS": "synchronous simulation, culling and render submission; excludes asynchronous GPU work",
+    "gpu": "backend timestamp queries when available; null otherwise"
+  },
+  "live": {
+    "frames": 19,
+    "averageFPS": 1.3886148201743806,
+    "onePercentLow": 0.7692307692307693,
+    "medianMS": 699.9000000000015,
+    "p95MS": 1300,
+    "droppedFrames": 802,
+    "cpuJSMS": 6.984210522551286,
+    "gpuMS": 1252.2208817894739
+  },
+  "peakJSHeapBytes": 23917775,
+  "errors": [],
+  "run": {
+    "path": "turn",
+    "started": 14305.800000011921,
+    "warmup": 1,
+    "duration": 3,
+    "samples": [
+      {
+        "time": 15515.6,
+        "ms": 500,
+        "cpu": 4.199999988079071,
+        "gpu": 1567.5869260000002
+      },
+      {
+        "time": 16132.3,
+        "ms": 616.6999999999989,
+        "cpu": 5.199999988079071,
+        "gpu": 1567.5869260000002
+      },
+      {
+        "time": 16515.6,
+        "ms": 383.2999999999993,
+        "cpu": 4.699999988079071,
+        "gpu": 1567.5869260000002
+      },
+      {
+        "time": 17448.9,
+        "ms": 933.3000000000029,
+        "cpu": 2.800000011920929,
+        "gpu": 369.19595799999996
+      },
+      {
+        "time": 18248.8,
+        "ms": 799.8999999999978,
+        "cpu": 3.400000035762787,
+        "gpu": 369.19595799999996
+      },
+      {
+        "time": 19048.8,
+        "ms": 800,
+        "cpu": 7.199999988079071,
+        "gpu": 369.19595799999996
+      }
+    ],
+    "route": [
+      {
+        "t": 0.3598999999880798,
+        "x": 2.8468649281851772,
+        "y": 12,
+        "z": 32.87697309790956,
+        "yaw": -1.4844203267977574
+      },
+      {
+        "t": 0.7097999999880794,
+        "x": 5.594465725654727,
+        "y": 12,
+        "z": 32.52233007096009,
+        "yaw": -1.4004443267977575
+      },
+      {
+        "t": 1.2097999999880795,
+        "x": 9.44755380439191,
+        "y": 12,
+        "z": 31.61872431191872,
+        "yaw": -1.2804443267977574
+      },
+      {
+        "t": 1.8264999999880784,
+        "x": 14.007018306520756,
+        "y": 12,
+        "z": 29.87981656839266,
+        "yaw": -1.1324363267977577
+      },
+      {
+        "t": 2.2097999999880775,
+        "x": 16.692621592882183,
+        "y": 12,
+        "z": 28.46675928792815,
+        "yaw": -1.0404443267977581
+      },
+      {
+        "t": 3.1430999999880807,
+        "x": 22.59875557846898,
+        "y": 12,
+        "z": 24.047790882004463,
+        "yaw": -0.8164523267977573
+      },
+      {
+        "t": 3.9429999999880785,
+        "x": 26.77189046588374,
+        "y": 12,
+        "z": 19.294192931623837,
+        "yaw": -0.6244763267977578
+      },
+      {
+        "t": 4.742999999988078,
+        "x": 29.96171162868705,
+        "y": 12,
+        "z": 13.830973800835546,
+        "yaw": -0.4324763267977578
+      }
+    ],
+    "interrupted": false,
+    "summary": {
+      "frames": 6,
+      "averageFPS": 1.4876524843796493,
+      "onePercentLow": 1.0714668381013575,
+      "medianMS": 616.6999999999989,
+      "p95MS": 933.3000000000029,
+      "droppedFrames": 236
+    },
+    "complete": true
+  },
+  "testEnvironment": "Software GPU functional test; not a physical target device"
+}

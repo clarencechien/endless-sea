@@ -1,0 +1,41 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+const out=process.env.ARTIFACTS_DIR||'/workspace/artifacts/bird';await mkdir(out,{recursive:true});
+const base=process.env.APP_URL||'http://127.0.0.1:5181/';
+const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--disable-gpu-watchdog']});
+const errors=[];function watch(p){p.setDefaultTimeout(60000);p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});}
+async function start(page){await page.locator('#start').click();await page.waitForFunction(()=>window.birdForest?.getState().frame>2,null,{timeout:120000});assert.equal(await page.locator('#error').isVisible(),false);}
+async function frames(page,n=3){const f=await page.evaluate(()=>window.birdForest.getState().frame);await page.waitForFunction(f=>window.birdForest.getState().frame>=f, f+n);}
+try{
+ const p=await browser.newPage({viewport:{width:640,height:480}});watch(p);
+ // Controlled no-WebGPU environment: Auto must still open a playable WebGL2 scene.
+ await p.addInitScript(()=>Object.defineProperty(navigator,'gpu',{value:undefined,configurable:true}));
+ await p.goto(base);await p.locator('#boot-settings').click();await p.locator('[data-profile=Low]').click();await p.locator('#close-panel').click();await start(p);
+ assert.equal(await p.evaluate(()=>window.birdForest.getState().backend),'webgl2');
+ await p.locator('#forest-world').click({position:{x:300,y:250}});const original=await p.evaluate(()=>window.birdForest.getState());
+ await p.keyboard.down('KeyD');await p.keyboard.down('KeyW');await frames(p,5);await p.keyboard.up('KeyD');await p.keyboard.up('KeyW');
+ let s=await p.evaluate(()=>window.birdForest.getState());assert.ok(s.yaw<original.yaw&&s.y>original.y);
+ await p.keyboard.press('Escape');assert.equal(await p.locator('#panel').evaluate(e=>e.open),true);const paused=await p.evaluate(()=>window.birdForest.getState());await p.waitForTimeout(150);assert.equal(await p.evaluate(()=>window.birdForest.getState().time),paused.time);
+ await p.locator('[data-profile="Battery-Saver"]').click();assert.equal(await p.evaluate(()=>window.birdForest.getStats().quality.scale),.6);
+ await p.keyboard.press('Escape');assert.equal(await p.locator('#panel').evaluate(e=>e.open),false);await frames(p,2);
+ await p.evaluate(()=>window.birdForest.benchmark('turn',{warmup:1,duration:3}));await p.waitForFunction(()=>window.birdForest.report().run?.complete,null,{timeout:60000});
+ await p.locator('#settings').click();await p.locator('#benchmark summary').click();
+ const downloadPromise=p.waitForEvent('download');await p.locator('#download').click();const download=await downloadPromise;const report=JSON.parse(await readFile(await download.path(),'utf8'));
+ assert.equal(report.seed,73129);assert.equal(report.run.path,'turn');assert.equal(report.run.complete,true);assert.ok(report.run.summary.frames>0);
+ await writeFile(`${out}/smoke-report.json`,JSON.stringify({...report,testEnvironment:'Software GPU functional test; not a physical target device'},null,2));
+ await p.locator('#close-panel').click();await p.evaluate(()=>{Object.defineProperty(document,'hidden',{value:true,configurable:true});document.dispatchEvent(new Event('visibilitychange'));});const beforeHidden=await p.evaluate(()=>window.birdForest.getState());await p.waitForTimeout(200);assert.equal(await p.evaluate(()=>window.birdForest.getState().time),beforeHidden.time);
+ await p.evaluate(()=>{Object.defineProperty(document,'hidden',{value:false,configurable:true});document.dispatchEvent(new Event('visibilitychange'));});await frames(p,2);assert.ok(await p.evaluate(()=>window.birdForest.getState().time)-beforeHidden.time<.3);
+ await p.screenshot({path:`${out}/desktop-controls.png`});
+ assert.deepEqual(errors,[]);
+ await p.evaluate(()=>document.querySelector('canvas').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext());await p.waitForFunction(()=>!document.querySelector('#error').hidden);assert.equal(await p.evaluate(()=>window.birdForest.getState().paused),true);assert.equal(errors.length,1);assert.match(errors.pop(),/WebGL Device Lost/);await p.close();
+ const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});watch(mobile);await mobile.goto(`${base}?backend=webgl2`);await start(mobile);
+ const state=await mobile.evaluate(()=>window.birdForest.getState());const stick=await mobile.locator('#stick').boundingBox(),up=await mobile.locator('#up').boundingBox();const cdp=await mobile.context().newCDPSession(mobile);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,x:stick.x+stick.width*.8,y:stick.y+stick.height/2},{id:2,x:up.x+up.width/2,y:up.y+up.height/2}]});await frames(mobile,4);await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ s=await mobile.evaluate(()=>window.birdForest.getState());assert.ok(s.yaw<state.yaw&&s.y>state.y,'Two fingers turn and climb together');
+ await mobile.screenshot({path:`${out}/mobile-controls.png`});
+ for(const [width,height] of [[320,568],[844,390],[568,320]]){await mobile.setViewportSize({width,height});await frames(mobile,2);assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth),width);for(const selector of ['#stick','#up','#down','header','footer','#telemetry']){const b=await mobile.locator(selector).boundingBox();assert.ok(b.x>=0&&b.y>=0&&b.x+b.width<=width+1&&b.y+b.height<=height+1,`${selector} in ${width}×${height}`);}}
+ await mobile.locator('#settings').tap();await mobile.locator('#benchmark summary').tap();await mobile.locator('#download').scrollIntoViewIfNeeded();const d=mobile.waitForEvent('download');await mobile.locator('#download').tap();assert.ok((await d).suggestedFilename().endsWith('.json'));await mobile.close();
+ const bad=await browser.newPage();watch(bad);await bad.goto(`${base}?backend=unsupported`);await bad.locator('#start').click();await bad.waitForFunction(()=>!document.querySelector('#error').hidden);assert.match(await bad.locator('#error-message').textContent(),/停用/);assert.ok(await bad.locator('#error-report').isVisible());await bad.close();
+ assert.deepEqual(errors,[]);console.log('PASS: Auto→WebGL2, keyboard/two-finger touch, climb/turn, pause/resume, runtime profiles, benchmark JSON download, rotation, context-loss UI, unsupported UI.');
+}finally{await browser.close();}

@@ -111,3 +111,11 @@ Vite 使用相對資源路徑，支援 Pages 的專案子目錄。產出可用 `
 介面元件共用 `src/ui.css` 的暖白、霧面海色與細線樣式，包含章節／畫質選單、滑桿、巡航開關、設定和指南。`src/ui.js` 的自訂選單保留原始 select 作為狀態來源，支援方向鍵預選、Enter／空白鍵確認、Home／End、Esc 取消與 Tab 離開；自動換章會同步可見文字及輔助科技狀態。選單依可用空間向上或向下展開，設定面板可捲動，點外或 Esc 關閉。體感設定只在觸控裝置顯示。開啟控制項時清除飛行按鍵，避免操作選單影響飛行。
 
 `APP_URL=http://127.0.0.1:5174 node tests/controls-browser.mjs` 檢查鍵盤與觸控選取、焦點返回、加速時鐘的自動換章同步、滑桿、面板收合、減少動態效果，以及四種手機橫直向尺寸的選單邊界與設定項目可達性，並輸出介面截圖。
+
+## 林間飛行 DLC
+
+[開啟 Bird Forest](https://clarencechien.github.io/endless-sea/forest/) · [DLC 開發、測試與授權說明](dlc/bird-forest/README.md)
+
+森林是同一個 Git repository 中的獨立子專案 `dlc/bird-forest/`，以獨立依賴／建置輸出到 `/forest/`；海洋仍在原路徑。`npm run dev:forest` 啟動森林開發伺服器，`npm run build:site` 建置海洋、DLC 和固定 SHA 的上游比較頁。首次需另外執行 `npm --prefix dlc/bird-forest ci`。GitHub Pages workflow 已改為發布完整站點。
+
+DLC 提供鳥的第三人稱飛行、鍵盤與手機搖桿、樹幹碰撞、WebGPU／WebGL2、畫質調整、固定測試路線與 JSON telemetry。使用上游離線 DAG 切片與 instancing；完整 GPU Nanite／HZB／TAA 尚未接入，實機手機與 Chromebook 的 60 FPS 驗收尚未完成。請以 DLC device matrix 為準。
