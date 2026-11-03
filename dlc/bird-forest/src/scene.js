@@ -1,5 +1,5 @@
 import * as THREE from 'three/webgpu';
-import {positionLocal,positionWorld,attribute,mix,vec2,vec3,smoothstep,texture,sin,pow} from 'three/tsl';
+import {positionLocal,positionWorld,attribute,mix,vec2,vec3,smoothstep,texture,sin,pow,color} from 'three/tsl';
 import {floorHeight,corridor,random,makeGrid,nearby} from './world.js';
 import {groundTexture,barkTexture} from './textures.js';
 import {createBird} from './bird.js';
@@ -7,8 +7,8 @@ export function createScene(trees=[]){
  const scene=new THREE.Scene();scene.fog=new THREE.Fog(0xb6c7be,40,135);
  const hemi=new THREE.HemisphereLight(0xcadce6,0x4b5140,2.0),sun=new THREE.DirectionalLight(0xffe4b9,3.1);sun.position.set(-50,85,40);scene.add(hemi,sun,sun.target);
  sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-29,right:29,top:29,bottom:-29,near:1,far:180});sun.shadow.bias=-.0003;sun.shadow.normalBias=.06;
- const skyMaterial=new THREE.MeshBasicNodeMaterial({side:THREE.BackSide,depthWrite:false}),dir=positionLocal.normalize();
- const skyColor=mix(vec3(.68,.77,.77),vec3(.27,.48,.62),smoothstep(-.05,.85,dir.y));
+ const skyMaterial=new THREE.MeshBasicNodeMaterial({side:THREE.BackSide,depthWrite:false,fog:false}),dir=positionLocal.normalize();
+ const skyColor=mix(color(0xb6c7be),color(0x719aaf),smoothstep(-.05,.85,dir.y));
  const glow=pow(dir.dot(vec3(-.46,.81,.36)).max(0),32).mul(.22);skyMaterial.colorNode=skyColor.add(vec3(1,.72,.38).mul(glow));
  const sky=new THREE.Mesh(new THREE.SphereGeometry(500,24,12),skyMaterial);sky.frustumCulled=false;scene.add(sky);
  const geometry=new THREE.PlaneGeometry(500,500,140,140).rotateX(-Math.PI/2),p=geometry.attributes.position;

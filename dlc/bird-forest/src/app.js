@@ -26,7 +26,7 @@ export async function startForest({profile,onPause,status,motion}){
  let view=createScene(world.trees),forest;
  try{forest=await createForest(backend.renderer,view.scene,world.trees,world.types);}
  catch(error){if(backend.backend!=='webgpu')throw error;telemetry.errors.push({stage:'gpu-scene',message:String(error)});backend.dispose();lost=false;$('#error').hidden=true;backend=await createBackend(capabilities,'webgl2',onLoss,telemetry.errors);view=createScene(world.trees);forest=await createForest(backend.renderer,view.scene,world.trees,world.types);}
- const {renderer}=backend,camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.15,420);
+ const {renderer}=backend,camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.15,720);
  const target=new THREE.RenderTarget(1,1,{type:THREE.UnsignedByteType}),present=new THREE.QuadMesh(new THREE.MeshBasicNodeMaterial({colorNode:texture(target.texture)}));
  const controls=createControls({onPause,onReset:reset,motion}),touch=capabilities.touch||params.get('touch')==='1',understory=createUnderstory(view.scene,world.trees),reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const output=new THREE.Vector2(),internal=new THREE.Vector2(),desired=new THREE.Vector3(),aim=new THREE.Vector3(),position=new THREE.Vector3(),rotation=new THREE.Quaternion(),up=new THREE.Vector3(0,1,0);
