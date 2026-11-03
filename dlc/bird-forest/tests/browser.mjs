@@ -20,8 +20,30 @@ try{
  await p.keyboard.press('Escape');assert.equal(await p.locator('#panel').evaluate(e=>e.open),true);const paused=await p.evaluate(()=>window.birdForest.getState());await p.waitForTimeout(150);assert.equal(await p.evaluate(()=>window.birdForest.getState().time),paused.time);
  await p.locator('[data-profile="Battery-Saver"]').click();assert.equal(await p.evaluate(()=>window.birdForest.getStats().quality.scale),.6);
  await p.keyboard.press('Escape');assert.equal(await p.locator('#panel').evaluate(e=>e.open),false);await frames(p,2);
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'forest-world');
+ // Repeat the reported sequence: quality switch, location switch, then control
+ // immediately, without clicking the canvas to repair keyboard focus.
+ for(const profile of ['High','Low']){
+  await p.locator('#settings').click();await p.locator(`[data-profile="${profile}"]`).click();await p.locator('#resume').click();await frames(p,2);
+  assert.equal(await p.evaluate(()=>document.activeElement.id),'forest-world');
+  const before=await p.evaluate(()=>window.birdForest.getState());await p.keyboard.down('KeyD');await frames(p,3);await p.keyboard.up('KeyD');assert.ok((await p.evaluate(()=>window.birdForest.getState())).yaw<before.yaw);
+ }
+ await p.locator('#settings').click();await p.locator('#benchmark summary').click();await p.locator('#route').selectOption('canopy');await p.locator('#visit').click();await frames(p,2);
+ assert.equal(await p.evaluate(()=>window.birdForest.getState().mode),'manual');assert.ok(await p.evaluate(()=>window.birdForest.getState().y)>20);
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'forest-world');
+ const visit=await p.evaluate(()=>window.birdForest.getState());await p.keyboard.down('ArrowRight');await p.keyboard.down('Space');await frames(p,4);await p.keyboard.up('ArrowRight');await p.keyboard.up('Space');
+ assert.ok(await p.evaluate(yaw=>window.birdForest.getState().yaw<yaw,visit.yaw));assert.ok(await p.evaluate(y=>window.birdForest.getState().y>y,visit.y));
+ await p.locator('#settings').click();await p.locator('#route').selectOption('speed');await p.locator('#run').click();await frames(p,2);
+ assert.equal(await p.evaluate(()=>window.birdForest.getState().mode),'benchmark');
+ await p.keyboard.down('KeyA');await frames(p,3);await p.keyboard.up('KeyA');
+ assert.equal(await p.evaluate(()=>window.birdForest.getState().mode),'manual');assert.equal(await p.evaluate(()=>window.birdForest.report().run.reason),'manual input');
+ assert.equal(await p.locator('#takeover').isVisible(),false);
+ await p.evaluate(()=>window.birdForest.benchmark('dense'));await p.locator('#takeover').click();
+ assert.equal(await p.evaluate(()=>window.birdForest.getState().mode),'manual');assert.equal(await p.evaluate(()=>document.activeElement.id),'forest-world');
+ await p.evaluate(()=>window.birdForest.benchmark('ground'));await p.locator('#settings').click();await p.locator('[data-profile="Battery-Saver"]').click();await p.locator('#close-panel').click();await frames(p,2);
+ assert.equal(await p.evaluate(()=>window.birdForest.getState().mode),'manual');
  await p.evaluate(()=>window.birdForest.benchmark('turn',{warmup:1,duration:3}));await p.waitForFunction(()=>window.birdForest.report().run?.complete,null,{timeout:60000});
- await p.locator('#settings').click();await p.locator('#benchmark summary').click();
+ await p.locator('#settings').click();
  const downloadPromise=p.waitForEvent('download');await p.locator('#download').click();const download=await downloadPromise;const report=JSON.parse(await readFile(await download.path(),'utf8'));
  assert.equal(report.seed,73129);assert.equal(report.run.path,'turn');assert.equal(report.run.complete,true);assert.ok(report.run.summary.frames>0);
  await writeFile(`${out}/smoke-report.json`,JSON.stringify({...report,testEnvironment:'Software GPU functional test; not a physical target device'},null,2));

@@ -1,0 +1,64 @@
+{
+  "timestamp": "2026-11-03T12:46:58.748Z",
+  "buildSHA": "9216f831172eb916ee8801a1291d1777715ab8f0",
+  "backend": "webgpu",
+  "quality": {
+    "profile": "High",
+    "scale": 1,
+    "minScale": 0.55,
+    "maxScale": 1,
+    "far": 160,
+    "lod": 0.8,
+    "shadows": true
+  },
+  "resolution": {
+    "viewportCSS": [
+      1280,
+      684
+    ],
+    "dpr": 1.5,
+    "outputPixels": [
+      1920,
+      1026
+    ],
+    "internalPixels": [
+      1920,
+      1026
+    ],
+    "upscaling": "bilinear spatial upscale; no TAA"
+  },
+  "live": {
+    "frames": 365,
+    "averageFPS": 24.27975600508212,
+    "onePercentLow": 19.960079840317043,
+    "medianMS": 33.400000000001455,
+    "p95MS": 50.099999999998545,
+    "droppedFrames": 537,
+    "cpuJSMS": 11.419178082184127,
+    "gpuMS": 38.800364361643744
+  },
+  "errors": [],
+  "adapter": {
+    "vendor": "intel",
+    "architecture": "gen-9",
+    "description": ""
+  },
+  "run": {
+    "path": "speed",
+    "started": 39763.39999999991,
+    "warmup": 15,
+    "duration": 60,
+    "interrupted": true,
+    "reason": "user pause",
+    "summary": {
+      "frames": 337,
+      "averageFPS": 24.303351987538218,
+      "onePercentLow": 19.960079840317043,
+      "medianMS": 33.400000000001455,
+      "p95MS": 50.099999999998545,
+      "droppedFrames": 495
+    },
+    "complete": false
+  },
+  "interpretation": "Physical Chromebook trace. High profile at 1.97 MP with shadows; GPU-bound. Speed benchmark was interrupted by opening settings. No recorded DOM focus state, so focus loss cannot be established from this report alone."
+}

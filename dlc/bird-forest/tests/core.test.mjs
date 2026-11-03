@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {plantForest,makeGrid,createBirdState,stepBird,routePose,PATHS,floorHeight,TICK} from '../src/world.js';
-import {Quality} from '../src/quality.js';
+import {Quality,renderSize} from '../src/quality.js';
 import {summarize,Telemetry} from '../src/telemetry.js';
 test('fixed seed gives stable placement and fixed routes do not depend on profile',()=>{assert.deepEqual(plantForest(),plantForest());assert.notDeepEqual(plantForest(1),plantForest(2));for(const path of PATHS)for(let i=0;i<60;i++)assert.ok(Object.values(routePose(path,i)).every(Number.isFinite));});
 test('all fixed routes stay clear of trunk proxies',()=>{const trees=plantForest();for(const path of PATHS)for(let t=0;t<75;t+=.25){const p=routePose(path,t);assert.ok(trees.every(tree=>p.y>=tree.y+tree.height*.88||Math.hypot(p.x-tree.x,p.z-tree.z)>=tree.radius+.65),`${path} at ${t}`);}});
@@ -11,3 +11,18 @@ test('Auto has warmup, cooldown, hard bounds and recovers only after sustained c
 test('statistics define 1% low by slowest intervals and missing timing stays null',()=>{const samples=Array(99).fill(10).concat(100),s=summarize(samples);assert.equal(s.onePercentLow,10);assert.equal(s.medianMS,10);assert.equal(s.p95MS,10);assert.equal(s.averageFPS,100000/1090);assert.equal(summarize([]).averageFPS,null);const t=new Telemetry();assert.equal(t.snapshot().gpuMS,null);t.start('ground',0,{warmup:1,duration:2});t.add(500,16,2,null);assert.equal(t.run.samples.length,0);t.add(1500,16,2,null);t.add(3100,16,2,null);assert.equal(t.report({}).run.complete,true);t.start('turn',4000);t.cancel('background');assert.equal(t.report({}).run.complete,false);});
 
 test('scripted flight faces its motion and corridor routes never teleport',()=>{for(const path of PATHS)for(let t=.01;t<75;t+=.071){const a=routePose(path,t),b=routePose(path,t+.001),dx=b.x-a.x,dz=b.z-a.z;assert.ok(Math.hypot(dx,dz)<.03);if(Math.hypot(dx,dz)>.001)assert.ok(-Math.sin(a.yaw)*dx-Math.cos(a.yaw)*dz>0,`${path} faces forward at ${t}`);}});
+
+test('high-DPI 3D work stays bounded while output and aspect are preserved',()=>{
+ for(const [w,h,dpr] of [[1280,684,1.5],[3840,2160,2],[390,844,3],[640,480,1]]){
+  const high=renderSize(w,h,dpr,1),low=renderSize(w,h,dpr,.7);
+  assert.ok(high.internal[0]*high.internal[1]<=1400000);
+  assert.ok(Math.abs(high.internal[0]/high.internal[1]-w/h)<.01);
+  assert.deepEqual(high.output,low.output);assert.ok(low.internal[0]<high.internal[0]);
+ }
+ assert.deepEqual(renderSize(640,480,1,1).internal,[640,480]);
+});
+test('Auto reacts to the reported 39 ms overload within six seconds without oscillating',()=>{
+ const q=new Quality();for(let i=0;i<150;i++)q.observe(40,39);
+ assert.ok(q.scale<=.7);const scale=q.scale;
+ for(let i=0;i<120;i++)q.observe(16.7,8);assert.equal(q.scale,scale);
+});

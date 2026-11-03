@@ -9,7 +9,7 @@ export async function createBackend(capabilities,forced,onLoss,errors){
  if(forced==='unsupported')throw new Error('測試模式：停用所有 3D 後端。');
  for(const backend of candidates){
   if(backend==='webgl2'&&!capabilities.webgl2API)continue;
-  const canvas=document.createElement('canvas');canvas.id='forest-world';canvas.setAttribute('aria-label','鳥在森林間飛行的 3D 場景');document.querySelector('#viewport').replaceChildren(canvas);
+  const canvas=document.createElement('canvas');canvas.id='forest-world';canvas.tabIndex=0;canvas.setAttribute('aria-label','鳥在森林間飛行的 3D 場景');document.querySelector('#viewport').replaceChildren(canvas);
   let renderer,device;
   try{
    const options={canvas,forceWebGL:backend==='webgl2',antialias:false,powerPreference:'low-power',trackTimestamp:true};

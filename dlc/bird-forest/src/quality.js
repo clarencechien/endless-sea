@@ -4,9 +4,15 @@ export const PROFILES={
  Medium:{scale:.85,far:135,lod:1,shadows:false},
  High:{scale:1,far:160,lod:.8,shadows:true}
 };
+// Bound 3D fill cost independently of CSS size / display DPR. Presentation stays native.
+export function renderSize(width,height,dpr,scale){
+ const ratio=Math.min(dpr,1.5),output=[Math.round(width*ratio),Math.round(height*ratio)];
+ const factor=Math.min(1,Math.sqrt(1400000/(output[0]*output[1])))*scale;
+ return {output,internal:output.map(n=>Math.max(1,Math.floor(n*factor))),factor};
+}
 export class Quality {
  constructor(){this.profile='Auto';this.scale=.8;this.far=125;this.lod=1;this.shadows=false;this.reset();}
- reset(){this.samples=[];this.elapsed=0;this.cooldown=8;this.clean=0;}
+ reset(){this.samples=[];this.elapsed=0;this.cooldown=4;this.clean=0;}
  set(profile){this.profile=profile;Object.assign(this,profile==='Auto'?{scale:.8,far:125,lod:1,shadows:false}:PROFILES[profile]);this.reset();}
  observe(ms,gpu=null){
   if(this.profile!=='Auto'||!Number.isFinite(ms)||ms<=0||ms>10000)return false;
@@ -16,7 +22,7 @@ export class Quality {
   this.samples=[];this.elapsed=0;if(this.cooldown>0)return false;
   let changed=false;
   if(p90>21){this.clean=0;
-   if(this.scale>.55){this.scale=Math.max(.55,+(this.scale-.05).toFixed(2));changed=true;}
+   if(this.scale>.55){this.scale=Math.max(.55,+(this.scale-(p90>30?.1:.05)).toFixed(2));changed=true;}
    else if(this.far>85){this.far-=10;this.lod=Math.min(1.6,this.lod+.1);changed=true;}
   }else if(p90<17.5){this.clean++;if(this.clean>=3){if(this.far<125){this.far+=10;this.lod=Math.max(1,this.lod-.1);changed=true;}else if(this.scale<1){this.scale=Math.min(1,+(this.scale+.05).toFixed(2));changed=true;}this.clean=0;}}
   else this.clean=0;

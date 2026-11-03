@@ -37,7 +37,7 @@ export async function createForest(renderer,scene,trees,types){
     for(const b of batches){if(b.type!==t.type||b.level!==level)continue;b.mesh.setMatrixAt(b.count,dummy.matrix);b.mesh.setColorAt(b.count,tint);b.roots.setXYZ(b.count,t.x,t.y+8*t.scale,t.z);b.count++;}
    }
   }
-  for(const b of batches){b.mesh.count=b.count;b.mesh.instanceMatrix.needsUpdate=true;if(b.mesh.instanceColor)b.mesh.instanceColor.needsUpdate=true;b.roots.needsUpdate=true;}
+  for(const b of batches){b.mesh.count=b.count;if(!b.count)continue;for(const [attribute,stride] of [[b.mesh.instanceMatrix,16],[b.mesh.instanceColor,3],[b.roots,3]]){if(!attribute)continue;attribute.clearUpdateRanges();attribute.addUpdateRange(0,b.count*stride);attribute.needsUpdate=true;}}
  }
  return {update,group,stats:()=>({visibleInstances:visible,impostors,total:trees.length,drawBatches:batches.filter(b=>b.count).length}),dispose(){for(const b of batches){b.mesh.geometry.dispose();b.mesh.material.dispose();b.mesh.dispose();}targets.forEach(t=>t.dispose());materials.leaves.dispose();materials.bark.dispose();scene.remove(group);}};
 }

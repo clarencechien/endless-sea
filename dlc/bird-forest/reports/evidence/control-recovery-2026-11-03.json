@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-11-03T12:53:59.374465+00:00",
+  "environment": "Chromium with SwiftShader WebGL2; functional checks, not physical-device FPS",
+  "unitTests": 24,
+  "build": "combined ocean/forest/upstream build passed",
+  "browserChecks": [
+    "Auto falls back to WebGL2",
+    "High to Low quality switch restores focus and keyboard turn without canvas click",
+    "canopy visit remains manual and keyboard turns/climbs immediately",
+    "speed benchmark yields to keyboard input and records interruption",
+    "takeover button restores manual flight and canvas focus",
+    "settings and profile change during benchmark return to manual flight",
+    "completed benchmark JSON export",
+    "tilt permission/calibration and climb/turn",
+    "permission-denied drag fallback",
+    "pause/resume and visibility",
+    "portrait/landscape layouts",
+    "context-loss and unsupported-backend error UI"
+  ],
+  "consoleErrors": []
+}

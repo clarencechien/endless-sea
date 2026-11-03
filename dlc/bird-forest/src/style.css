@@ -8,3 +8,5 @@
 #forest-world{touch-action:none;user-select:none;-webkit-user-select:none}.flight-actions{display:flex;gap:7px}#gust{touch-action:none}#gust[aria-pressed=true]{background:#e9e5bd30;border-color:#e9e5bd88}.touch-device #flight-hint{display:block!important;bottom:85px;left:0;width:100%;text-align:center;font-size:10px;pointer-events:none;opacity:.7}#flight-hint{transition:opacity .8s}.playing #telemetry{opacity:.82}@media(max-height:500px){.touch-device #flight-hint{bottom:68px}}
 
 .playing .shade{background:linear-gradient(180deg,#102b2a48,transparent 22%),linear-gradient(0deg,#102b2a55,transparent 30%)}header{text-shadow:0 1px 9px #102c26}
+
+#forest-world:focus{outline:none}#takeover{white-space:nowrap}@media(max-width:700px){footer:has(#takeover:not([hidden])) #flight-state{display:none}footer:has(#takeover:not([hidden])){flex-wrap:wrap}footer:has(#takeover:not([hidden])) #run-status{max-width:100%}}
