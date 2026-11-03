@@ -6,9 +6,9 @@
 <div id="reticle" hidden>·</div><div id="flight-hint" hidden>WASD 轉向與升降 · Shift 掠風</div>
 <footer><span id="flight-state">01 / 林間試飛</span><div class="flight-actions"><button id="takeover" hidden>接手飛行</button><button id="gust" hidden aria-label="按住加速掠風" aria-pressed="false">掠風</button><button id="pause" hidden>暫停</button></div><span id="run-status" role="status"></span></footer>
 <dialog id="panel" aria-labelledby="panel-title"><div class="panel-head"><h2 id="panel-title">隨風調整</h2><button id="close-panel" aria-label="關閉設定">×</button></div>
-<p class="muted">固定林區試飛。樹幹會擋住去路；枝葉是視覺效果。</p>
+<p class="muted">沿著森林飛，林緣的風會輕輕帶你回來。</p>
 <fieldset><legend>畫質</legend><div class="profiles"><button data-profile="Auto" aria-pressed="true">自動</button><button data-profile="Battery-Saver" aria-pressed="false">省電</button><button data-profile="Low" aria-pressed="false">低</button><button data-profile="Medium" aria-pressed="false">中</button><button data-profile="High" aria-pressed="false">高</button></div></fieldset>
-<label>渲染後端<select id="backend"><option value="auto">自動 · 優先 WebGPU</option><option value="webgl2">WebGL2 · 相容模式</option></select></label><p class="muted">後端切換會重新載入。追求流暢可選「自動」；高畫質含即時陰影。</p>
+<label>渲染後端<select id="backend"><option value="auto">自動 · 優先 WebGPU</option><option value="webgl2">WebGL2 · 相容模式</option></select></label><p class="muted">後端切換會重新載入。追求流暢可選「自動」；高畫質保留近景陰影，解析度會隨負擔調整。</p>
 <div id="motion-settings" hidden><p id="motion-status" class="muted" role="status">展翅時開啟體感，以舒服的握姿校準。</p><div class="actions"><button id="motion-enable">開啟體感</button><button id="motion-center">校準握姿</button></div></div>
 <details><summary>裝置資訊</summary><pre id="device-info">開始後偵測；不依裝置名稱猜測效能。</pre></details>
 <details id="benchmark"><summary>飛行測試與報告</summary><p class="muted">前往林區可自由飛行；效能測試會自動飛行 75 秒，轉向即可接手。</p>

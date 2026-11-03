@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-11-03T13:28:35.647Z",
+  "buildSHA": "9d1eacf165e948873cc88670c0640430b0a9b50b",
+  "backend": "webgpu",
+  "quality": {
+    "profile": "High",
+    "scale": 1,
+    "minScale": 0.55,
+    "maxScale": 1,
+    "far": 160,
+    "lod": 0.8,
+    "shadows": true
+  },
+  "resolution": {
+    "viewportCSS": [
+      1280,
+      684
+    ],
+    "dpr": 1.5,
+    "outputPixels": [
+      1920,
+      1026
+    ],
+    "internalPixels": [
+      1618,
+      864
+    ],
+    "effectiveScale": 0.8427083333333333,
+    "pixelBudget": 1400000,
+    "upscaling": "bilinear spatial upscale; no TAA"
+  },
+  "flight": {
+    "paused": true,
+    "mode": "manual",
+    "route": null,
+    "focusedElement": "download"
+  },
+  "live": {
+    "frames": 462,
+    "averageFPS": 30.766362110758916,
+    "onePercentLow": 11.996161228406827,
+    "medianMS": 33.30000000000291,
+    "p95MS": 50.09999999999127,
+    "droppedFrames": 439,
+    "cpuJSMS": 8.645454545481154,
+    "gpuMS": 29.84157645021645
+  },
+  "errors": [],
+  "run": null,
+  "adapter": {
+    "vendor": "intel",
+    "architecture": "gen-9",
+    "description": ""
+  },
+  "interpretation": "Physical Chromebook High trace, not a controlled A/B route. GPU ~30 ms remains over a 60 FPS budget. Manual mode; paused to export. No recorded position in this old schema, so edge location cannot be recovered from the report."
+}

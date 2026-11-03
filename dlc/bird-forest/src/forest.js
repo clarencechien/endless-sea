@@ -16,7 +16,7 @@ export async function createForest(renderer,scene,trees,types){
   for(let level=0;level<4;level++)for(const kind of level===3?['impostor']:['bark','leaf']){
    const g=level===3?new THREE.PlaneGeometry(18,20).translate(0,9,0):geometry(t.cuts[level][kind==='leaf'?'leaves':'bark']);
    const roots=new THREE.InstancedBufferAttribute(new Float32Array(trees.length*3),3);roots.setUsage(THREE.DynamicDrawUsage);g.setAttribute('root',roots);
-   const mesh=new THREE.InstancedMesh(g,materials.material(kind,level,target.texture),trees.length);mesh.count=0;mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.castShadow=level<2;mesh.receiveShadow=true;
+   const mesh=new THREE.InstancedMesh(g,materials.material(kind,level,target.texture),trees.length);mesh.count=0;mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.castShadow=level===0;mesh.receiveShadow=true;
    group.add(mesh);batches.push({type,level,kind,mesh,roots,count:0});
   }
  }

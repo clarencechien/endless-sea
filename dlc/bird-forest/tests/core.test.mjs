@@ -26,3 +26,29 @@ test('Auto reacts to the reported 39 ms overload within six seconds without osci
  assert.ok(q.scale<=.7);const scale=q.scale;
  for(let i=0;i<120;i++)q.observe(16.7,8);assert.equal(q.scale,scale);
 });
+test('High sheds sustained GPU load while keeping forest detail and near shadows',()=>{
+ const q=new Quality();q.set('High');for(let i=0;i<240;i++)q.observe(33.3,30);
+ assert.ok(q.scale<1);assert.equal(q.shadows,true);assert.equal(q.far,160);assert.equal(q.lod,.8);
+ for(let i=0;i<2000;i++)q.observe(33.3,30);assert.equal(q.scale,.65);
+ const low=q.scale;for(let i=0;i<120;i++)q.observe(16.7,8);assert.equal(q.scale,low);
+ for(let i=0;i<12000;i++)q.observe(16.7,8);assert.equal(q.scale,1);
+});
+test('forest edge guides every heading inward smoothly, including sustained outward input',()=>{
+ const grid=makeGrid([]);
+ for(let a=0;a<8;a++)for(let h=0;h<8;h++)for(const turn of [-1,0,1]){
+  const s={...createBirdState(),x:150*Math.sin(a*Math.PI/4),z:150*Math.cos(a*Math.PI/4),y:30,yaw:h*Math.PI/4,speed:22};
+  let entered=false;
+  for(let i=0;i<1800;i++){
+   const {x,z,yaw}=s;stepBird(s,{turn,lift:0,boost:true},grid);
+   assert.ok(Math.hypot(s.x,s.z)<175,'No exposed outer boundary');
+   assert.ok(Math.hypot(s.x-x,s.z-z)<.38,'No teleport or wrap');assert.ok(Math.abs(s.yaw-yaw)<=1.35*TICK+1e-8);
+   if(Math.hypot(s.x,s.z)<140)entered=true;
+  }
+  assert.ok(entered,'Flight returns inside the forest');
+ }
+});
+test('edge guidance leaves interior control unchanged and long flights stay inside planted terrain',()=>{
+ const interior={...createBirdState(),x:0,z:0};stepBird(interior,{turn:1,lift:0},makeGrid([]));assert.equal(interior.edgeAssist,0);assert.equal(interior.yaw,-.95*TICK);
+ const grid=makeGrid(plantForest()),s=createBirdState();
+ for(let i=0;i<36000;i++){stepBird(s,{turn:Math.sin(i*.001)*.7,lift:.2,boost:true},grid);assert.ok(Math.hypot(s.x,s.z)<175);}
+});

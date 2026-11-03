@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-11-03T13:36:16.582681+00:00",
+  "environment": "Chromium SwiftShader WebGL2; not physical-device performance validation",
+  "unitTests": 27,
+  "physicsChecks": [
+    "192 edge start/heading/input combinations return inward",
+    "No wrapping/teleport; displacement under 0.38 m per tick, yaw rate capped at 1.35 rad/s",
+    "10 simulated minutes with seeded forest colliders remain inside 175 m radius",
+    "Interior controls unchanged"
+  ],
+  "qualityChecks": [
+    "High responds to sustained 30 ms GPU load",
+    "High retains LOD, far range and near shadows",
+    "Resolution minimum and slow recovery verified"
+  ],
+  "browserChecks": "Desktop and mobile controls, High/Low switches, location visit, benchmark takeover/export, tilt permission/calibration, denied-permission drag, rotation, visibility, context-loss and unsupported-backend UI all passed",
+  "build": "Combined ocean/forest/upstream build passed",
+  "consoleErrors": []
+}

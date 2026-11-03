@@ -15,12 +15,18 @@ export function plantForest(seed=SEED){
 }
 export function makeGrid(trees){const grid=new Map();for(const t of trees){const key=`${Math.floor(t.x/8)},${Math.floor(t.z/8)}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(t);}return grid;}
 export function nearby(grid,x,z){const out=[];for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)out.push(...(grid.get(`${Math.floor(x/8)+dx},${Math.floor(z/8)+dz}`)||[]));return out;}
-export function createBirdState(){return {x:corridor(100),y:floorHeight(corridor(100),100)+6,z:100,yaw:0,pitch:0,bank:0,speed:12,time:0,collisions:0};}
+export function createBirdState(){return {x:corridor(100),y:floorHeight(corridor(100),100)+6,z:100,yaw:0,pitch:0,bank:0,speed:12,time:0,collisions:0,edgeAssist:0};}
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export function stepBird(s,input,grid,dt=TICK){
  const ease=1-Math.exp(-dt*5);
- s.bank+=(-input.turn*.62-s.bank)*ease;s.pitch+=(input.lift*.4-s.pitch)*ease;
- s.yaw-=input.turn*dt*.95;s.speed+=((input.boost?20:12)+Math.max(0,-s.pitch)*5-s.speed)*dt*2;
+ // A broad, smooth turn before the finite forest edge. No position wrap, clamp,
+ // or teleport: bank, heading and chase camera follow the same curved flight.
+ const radius=Math.hypot(s.x,s.z),edge=clamp((radius-110)/45,0,1);
+ s.edgeAssist=edge*edge*(3-2*edge);
+ const inward=Math.atan2(s.x,s.z),error=Math.atan2(Math.sin(inward-s.yaw),Math.cos(inward-s.yaw));
+ const turnRate=-input.turn*.95*(1-s.edgeAssist)+clamp(error*1.5,-1.35,1.35)*s.edgeAssist;
+ s.bank+=(clamp(turnRate/.95*.62,-.7,.7)-s.bank)*ease;s.pitch+=(input.lift*.4-s.pitch)*ease;
+ s.yaw+=turnRate*dt;s.speed+=((input.boost?20:12)+Math.max(0,-s.pitch)*5-s.speed)*dt*2;
  let nx=s.x-Math.sin(s.yaw)*s.speed*dt,nz=s.z-Math.cos(s.yaw)*s.speed*dt;
  let ny=s.y+Math.sin(s.pitch)*s.speed*dt;
  // The fixed-tick step travels at most .37 m; the bird's .65 m proxy cannot tunnel
@@ -29,7 +35,7 @@ export function stepBird(s,input,grid,dt=TICK){
   const d=Math.hypot(nx-t.x,nz-t.z),r=t.radius+.65;
   if(ny<t.y+t.height*.88&&d<r){const dx=(nx-t.x)/(d||1),dz=(nz-t.z)/(d||1);nx=t.x+(d?dx:1)*r;nz=t.z+dz*r;s.speed=Math.min(s.speed,4);s.collisions++;}
  }
- s.x=clamp(nx,-195,195);s.z=clamp(nz,-195,195);
+ s.x=nx;s.z=nz;
  s.y=clamp(ny,floorHeight(s.x,s.z)+1.4,floorHeight(s.x,s.z)+35);s.time+=dt;
 }
 export const PATHS=['ground','dense','turn','canopy','speed','pause-resume'];
