@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-03T12:42:27.827Z",
+  "baseline": {
+    "repository": "https://github.com/VictorZakharov/threejs-nanites",
+    "sha": "500113d7b651d2eb96392ce87c96330bdec25e15",
+    "sourceModified": false,
+    "comparisonQuery": "scene=forest&trees=2000&bushes=0.5&statues=0&plaza=0&music=0&auto=0&pr=1&outpr=1&shadows=0&grass=0&relief=0",
+    "note": "Original upstream app. Its public/models/README.md contains separate non-commercial Stanford Lucy asset terms; the Bird Forest DLC does not load these assets."
+  },
+  "query": "harness=1&scene=forest&trees=30&bushes=0&statues=0&plaza=0&music=0&auto=0&pr=.5&outpr=1&shadows=0&grass=0&relief=0&webgl=1",
+  "info": {
+    "backend": "WebGL 2",
+    "output": "320x210",
+    "trees": 28,
+    "instances": 28,
+    "impostors": 28,
+    "grown": 0
+  },
+  "errors": [],
+  "externalFontFailures": [
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&display=swap",
+      "message": "Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+    }
+  ],
+  "testEnvironment": "Chromium + SwiftShader; functional route and baseline smoke only"
+}

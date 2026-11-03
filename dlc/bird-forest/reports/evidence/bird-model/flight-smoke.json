@@ -1,0 +1,14 @@
+{
+  "ground-desktop-webgl2.json": {
+    "backend": "webgl2",
+    "consoleErrors": [],
+    "complete": true,
+    "environment": "Headless Chromium with SwiftShader software rendering; NOT real phone/laptop validation"
+  },
+  "ground-mobile-webgl2.json": {
+    "backend": "webgl2",
+    "consoleErrors": [],
+    "complete": true,
+    "environment": "Headless Chromium with SwiftShader software rendering; NOT real phone/laptop validation"
+  }
+}
