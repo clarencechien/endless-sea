@@ -1,0 +1,60 @@
+{
+  "source": "User-provided phone report: bird-forest-2026-11-03T10-31-05.299Z.json",
+  "buildSHA": "707683d3e32b91f24c98ecdcf8431da6de1f4303",
+  "device": "Physical Android phone reported by user; model and actual OS version not provided",
+  "browser": "Chrome 156 (reported UA)",
+  "backend": "webgpu",
+  "profile": {
+    "profile": "High",
+    "scale": 1,
+    "minScale": 0.55,
+    "maxScale": 1,
+    "far": 160,
+    "lod": 0.8,
+    "shadows": true
+  },
+  "resolution": {
+    "viewportCSS": [
+      443,
+      864
+    ],
+    "dpr": 2.4375,
+    "outputPixels": [
+      664,
+      1296
+    ],
+    "internalPixels": [
+      664,
+      1296
+    ],
+    "upscaling": "bilinear spatial upscale; no TAA"
+  },
+  "live15Seconds": {
+    "frames": 1431,
+    "averageFPS": 95.37456678219142,
+    "onePercentLow": 59.523809523799216,
+    "medianMS": 8.39999999999418,
+    "p95MS": 16.69999999999709,
+    "droppedFrames": 0,
+    "cpuJSMS": 2.8011181031299754,
+    "gpuMS": 6.351633710691841
+  },
+  "errors": [],
+  "scriptedRun": {
+    "path": "speed",
+    "complete": false,
+    "reason": "user pause",
+    "warmup": 15,
+    "requestedDuration": 60,
+    "capturedSeconds": 1.4085999999999912,
+    "summary": {
+      "frames": 87,
+      "averageFPS": 61.76345307397454,
+      "onePercentLow": 59.523809523799216,
+      "medianMS": 16.69999999999709,
+      "p95MS": 16.80000000000291,
+      "droppedFrames": 0
+    }
+  },
+  "interpretation": "WebGPU High was playable on this phone at the prior revision. Live rolling FPS is not a completed 60-second benchmark. New visuals and motion controls require fresh real-device measurement."
+}

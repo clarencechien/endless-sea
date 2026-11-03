@@ -1,1 +1,1 @@
-export const TREE_ASSET="trees-b7fc2e666358.bin";
+export const TREE_ASSET="trees-94f83450c847.bin";

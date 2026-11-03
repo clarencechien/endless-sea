@@ -30,8 +30,9 @@ npm run preview -- --port 5174         # /, /forest/, /forest/upstream/
 
 ## 操作
 
-- WASD／方向鍵：轉向、升降；Space 上升；Ctrl 下降；Shift 加速；R 回入口；Esc 暫停／設定。
-- 手機：左搖桿轉向與升降，右側大按鈕上升／下降；右半畫面拖曳環顧。支援同時兩指操作、pointer cancellation、旋轉與 safe area。
+- WASD／方向鍵：轉向、升降；Space 上升；Ctrl 下降；Shift 加速掠風；R 回入口；Esc 暫停／設定。
+- 手機：點「展翅」時開啟體感，以當下握姿校準；左右傾斜轉向、前後傾斜升降。設定可重試授權／校準。沒有感測器或拒絕權限時，直接拖曳畫面轉向與升降；不顯示虛擬搖桿或上下左右按鈕。訊號超過 1.2 秒未更新會歸零；旋轉、暫停與恢復會重新校準。
+- 按住「掠風」或 Shift 加速；巡航約 12 m/s、掠風約 20 m/s，俯衝可到約 22 m/s。鳥會交替滑翔與拍翼；相機隨速度輕微拓寬視角（70–82°）與側傾，`prefers-reduced-motion` 關閉這兩項動態視角。
 - 設定：Auto、Battery-Saver、Low、Medium、High 即時切換。後端切換會重載，`?backend=webgl2` 可強制降級。
 - 固定約 420 m 的森林測試區；高度為地表上 1.4–35 m。樹幹有固定碰撞代理；枝葉與小石頭是裝飾。飛行限制在測試區內，並非無限地圖。
 - 不含音樂、帳號、任務或外部追蹤。
@@ -40,13 +41,15 @@ npm run preview -- --port 5174         # /, /forest/, /forest/upstream/
 
 上游：Victor Zakharov / [threejs-nanites](https://github.com/VictorZakharov/threejs-nanites)，`main`，固定 SHA `500113d7b651d2eb96392ce87c96330bdec25e15`。已閱讀上游 README、AGENTS 與 harness guide；其作者 PR 流程和 Windows 磁碟規則不套用到本專案。
 
-`vendor/nanite-lib/` 是該 SHA 的未修改快照。開發端 `tools/build-trees.mjs` 用其 **128-triangle cluster DAG 建構與 dagCut**，將兩種自製樹木做成三層固定切片。共用頂點資料寫成附內容雜湊的二進位資產，約 600 KB 原始大小；瀏覽器不建 DAG，也不需要 Blender 或 ez-tree。worker 解碼並以 seed 73129 建立 2,919 棵樹的固定測試區；這是這份 seed/間距實驗的結果，並非跨裝置最佳數量或千萬面的 KPI。
+`vendor/nanite-lib/` 是該 SHA 的未修改快照。開發端 `tools/build-trees.mjs` 用其 **128-triangle cluster DAG 建構與 dagCut**，將兩種自製樹木做成三層固定切片。共用頂點資料寫成附內容雜湊的二進位資產，約 900 KB 原始大小；瀏覽器不建 DAG，也不需要 Blender 或 ez-tree。枝葉用小型複葉貼圖、葉脈／樹皮程序紋理與微風位移。地面以兩個不同尺度的旋轉紋理混合、樹根遮蔭、近景蕨類、倒木與稀疏花粉增加縱深；有限的光束面片模擬透光，並非體積光追。蕨類只選最近的 100–420 叢，低比例降低距離，省電關閉花粉與光束。
+
+worker 解碼並以 seed 73129 建立 2,919 棵樹的固定測試區；這是這份 seed/間距實驗的結果，並非跨裝置最佳數量或千萬面的 KPI。
 
 WebGPU 和 WebGL2 目前共用 **instancing + 固定 DAG LOD + 啟動時烘焙的單角度遠景 impostor**。CPU 做視錐／距離剔除，近場保留完整樹幹，LOD 帶以互補的固定螢幕抖點交接，遠景在霧中淡出。近鏡枝葉另以抖點淡出，避免相機進入樹冠時被整片葉卡遮住。鳥、地形、樹幹碰撞與 seed 不隨畫質改變。固定 60 Hz 物理與繪製分開，恢復分頁時清除積欠時間。
 
 **DLC 尚未接入上游完整的 GPU-driven cluster selection、HZB、software rasterizer、TAA／temporal upscaling、草與 relief。** 設定與 JSON 明確標示不可用，沒有假的 A/B 開關；原版比較頁保留這些功能供獨立測試。DLC 的 WebGPU 路徑不是完整 Nanite 管線。未修改的 renderer 保留於 vendor，方便後續在量測證明有收益時接入。
 
-Auto 以 2 秒前景幀間隔視窗、8 秒暖機、4 秒調整冷卻與持續乾淨視窗恢復：先以 0.05 步距調整內部比例（0.55–1.0），到下限才調遠距離與 LOD。輸出像素 DPR 上限 1.5，內部 target 另乘 render scale，以單次 spatial bilinear pass 放大；沒有宣稱重建原生解析度。High 可開啟 512² 陰影，其餘初始關閉；第一次切換可能編譯新 shader。
+Auto 以 2 秒前景幀間隔視窗、8 秒暖機、4 秒調整冷卻與持續乾淨視窗恢復：先以 0.05 步距調整內部比例（0.55–1.0），到下限才調遠距離與 LOD。輸出像素 DPR 上限 1.5，內部 target 另乘 render scale，以單次 spatial bilinear pass 放大；沒有宣稱重建原生解析度。High 可開啟 1024² 陰影，其餘初始關閉；第一次切換可能編譯新 shader。
 
 ## 量測與重播
 
@@ -75,10 +78,10 @@ harness 預設使用 Chromium + SwiftShader，**是功能檢查，無法代表�
 
 ## 已知限制與故障處理
 
-- **實機手機／低功耗筆電尚未測試；60 FPS = NOT VERIFIED。** 雲端的 software WebGPU 是否能完成工作，與瀏覽器是否暴露 navigator.gpu 是兩件事。
+- **使用者已回傳上一版實體 Android 手機的 WebGPU High 試飛；新版體感／畫質與低功耗筆電仍待實機驗收。完整 60 秒 benchmark 尚未完成。** 雲端的 software WebGPU 是否能完成工作，與瀏覽器是否暴露 navigator.gpu 是兩件事。
 - 偵測 adapter 後先提交極小 GPU 工作確認可用性；初始化失敗會釋放 renderer/context 再嘗試 WebGL2。執行中 context/device lost 會暫停並顯示診斷及重新啟動；不顯示空白畫面。
 - 若無法啟動：使用 `?backend=webgl2`，確認硬體加速，下載診斷。`?backend=unsupported` 是受控錯誤 UI 測試。
-- 單角度 impostor 從樹冠上方看仍可能有形狀差異；近距離 alpha foliage、LOD 交接與地面材質需真機動態驗收。遠處畫質會在低比例時變軟。
+- 小葉片的 alpha 邊緣在低解析度仍可能有鋸齒；此輪沒有引入 TAA 或昂貴的全畫面模糊。單角度 impostor 從樹冠上方看仍可能有形狀差異；近距離 alpha foliage、LOD 交接與地面材質需真機動態驗收。遠處畫質會在低比例時變軟。
 - 上游完整 demo 的操作、場景與工作量不同；不要直接把它與 DLC 的 FPS 比值當純演算法收益。
 
 ## 授權
@@ -86,3 +89,9 @@ harness 預設使用 Chromium + SwiftShader，**是功能檢查，無法代表�
 DLC 的鳥、樹、葉片／樹皮圖案與地形為自製程序資產。Nanite library 保留 [MIT 原文](vendor/LICENSE.nanite) 與作者歸屬。Three.js、meshoptimizer 各自依 MIT 發布。
 
 `/forest/upstream/` 是獨立比較的上游原版建置，保留其 LICENSE、README 和 `models/README.md`。其中 Stanford Lucy 模型另有**僅研究／非商業用途**等條款，並非上游程式碼 MIT 的一部分；鳥的 DLC 不引用或載入這些模型、上游音效或樹木貼圖。商業發布前應移除比較頁或另行確認其全部資產授權。
+
+## 本輪手機回報與精修
+
+使用者回報 `707683d` 在實體手機 Chrome 156 / WebGPU / High / 664×1296，最近 15 秒平均 **95.37 FPS**、1% low **59.52 FPS**、p95 **16.7 ms**、平均 GPU **6.35 ms**，沒有錯誤。型號和實際 OS 版本未知（UA 已隱私簡化）。`speed` 測試暖機 15 秒後僅記錄 **1.409 秒**即因使用者暫停中止，不能當作完成的 60 秒性能測試。見 [回報摘要](reports/evidence/phone-2026-11-03-summary.json)。
+
+2026-11-03 的後續使用者要求將手機改為體感，優先於原始 handoff 的搖桿規格；handoff 原文保留作歷史紀錄。本輪以 WebGL2 軟體 GPU 驗證功能與畫面，不能把舊版手機 95 FPS 套到新版。重新測試時請等暖機與 60 秒倒數結束，再開設定匯出；開設定會安全暫停並中止正在進行的測試。JSON 幀樣本新增當時的 scale / far，供 Auto 模式比較。

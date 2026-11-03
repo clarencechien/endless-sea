@@ -15,19 +15,19 @@ export function plantForest(seed=SEED){
 }
 export function makeGrid(trees){const grid=new Map();for(const t of trees){const key=`${Math.floor(t.x/8)},${Math.floor(t.z/8)}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(t);}return grid;}
 export function nearby(grid,x,z){const out=[];for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)out.push(...(grid.get(`${Math.floor(x/8)+dx},${Math.floor(z/8)+dz}`)||[]));return out;}
-export function createBirdState(){return {x:corridor(100),y:floorHeight(corridor(100),100)+6,z:100,yaw:0,pitch:0,bank:0,speed:9,time:0,collisions:0};}
+export function createBirdState(){return {x:corridor(100),y:floorHeight(corridor(100),100)+6,z:100,yaw:0,pitch:0,bank:0,speed:12,time:0,collisions:0};}
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export function stepBird(s,input,grid,dt=TICK){
  const ease=1-Math.exp(-dt*5);
  s.bank+=(-input.turn*.62-s.bank)*ease;s.pitch+=(input.lift*.4-s.pitch)*ease;
- s.yaw-=input.turn*dt*.95;s.speed+=((input.boost?16:9)-s.speed)*dt*2;
+ s.yaw-=input.turn*dt*.95;s.speed+=((input.boost?20:12)+Math.max(0,-s.pitch)*5-s.speed)*dt*2;
  let nx=s.x-Math.sin(s.yaw)*s.speed*dt,nz=s.z-Math.cos(s.yaw)*s.speed*dt;
  let ny=s.y+Math.sin(s.pitch)*s.speed*dt;
- // The fixed-tick step travels at most .27 m; the bird's .65 m proxy cannot tunnel
+ // The fixed-tick step travels at most .37 m; the bird's .65 m proxy cannot tunnel
  // through a trunk. Both renderer paths and every quality use these same colliders.
  for(const t of nearby(grid,nx,nz)){
   const d=Math.hypot(nx-t.x,nz-t.z),r=t.radius+.65;
-  if(ny<t.y+t.height*.63&&d<r){const dx=(nx-t.x)/(d||1),dz=(nz-t.z)/(d||1);nx=t.x+(d?dx:1)*r;nz=t.z+dz*r;s.speed=Math.min(s.speed,4);s.collisions++;}
+  if(ny<t.y+t.height*.88&&d<r){const dx=(nx-t.x)/(d||1),dz=(nz-t.z)/(d||1);nx=t.x+(d?dx:1)*r;nz=t.z+dz*r;s.speed=Math.min(s.speed,4);s.collisions++;}
  }
  s.x=clamp(nx,-195,195);s.z=clamp(nz,-195,195);
  s.y=clamp(ny,floorHeight(s.x,s.z)+1.4,floorHeight(s.x,s.z)+35);s.time+=dt;
@@ -37,8 +37,8 @@ export function routePose(path,time){
  const speed=path==='speed'?16:8,progress=(time*speed)%560,returning=progress>280,z=returning?progress-420:140-progress,x=corridor(z);
  const y=path==='canopy'?29:path==='dense'?9:5;
  if(path==='turn'){
-  const a=time*.24;return {x:Math.sin(a)*33,z:Math.cos(a)*33,y:12,yaw:a-Math.PI/2,pitch:0,bank:-.38};
+  const a=time*.24;return {x:Math.sin(a)*33,z:Math.cos(a)*33,y:12,yaw:a-Math.PI/2,pitch:0,bank:-.38,speed:33*.24};
  }
  const offset=path==='dense'?19:0;
- return {x:x+offset,z,y:floorHeight(x+offset,z)+y,yaw:Math.atan(Math.cos(z*.027)*19*.027)+(returning?Math.PI:0),pitch:0,bank:Math.sin(time*.5)*.08};
+ return {x:x+offset,z,y:floorHeight(x+offset,z)+y,yaw:Math.atan(Math.cos(z*.027)*19*.027)+(returning?Math.PI:0),pitch:0,bank:Math.sin(time*.5)*.08,speed};
 }

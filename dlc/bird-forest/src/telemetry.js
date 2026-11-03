@@ -5,9 +5,9 @@ export function summarize(samples){
 }
 export class Telemetry {
  constructor(){this.recent=[];this.run=null;this.lastRun=null;this.errors=[];this.peakHeap=null;this.refreshSamples=[];}
- add(time,ms,cpu,gpu){
+ add(time,ms,cpu,gpu,settings={}){
   if(ms<=0||ms>10000)return;
-  const row={time,ms,cpu,gpu};this.recent.push(row);while(this.recent[0]?.time<time-15000)this.recent.shift();
+  const row={time,ms,cpu,gpu,...settings};this.recent.push(row);while(this.recent[0]?.time<time-15000)this.recent.shift();
   const heap=performance.memory?.usedJSHeapSize;if(heap)this.peakHeap=Math.max(this.peakHeap||0,heap);
   if(this.run){const elapsed=(time-this.run.started)/1000;if(elapsed>=this.run.warmup)this.run.samples.push(row);if(elapsed>=this.run.warmup+this.run.duration){this.lastRun=this.run;this.run=null;}}
  }

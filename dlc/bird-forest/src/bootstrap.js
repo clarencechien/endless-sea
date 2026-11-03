@@ -1,7 +1,13 @@
 import './style.css';
 import './boot-timing.js';
+import {MotionControl} from './motion.js';
+const touch=matchMedia('(pointer: coarse)').matches||new URLSearchParams(location.search).get('touch')==='1';
+let hintTimer;
+const motion=new MotionControl((text,status)=>{document.querySelector('#motion-status').textContent=text;const hint=document.querySelector('#flight-hint');hint.textContent=text;hint.style.opacity='';clearTimeout(hintTimer);if(status==='active')hintTimer=setTimeout(()=>hint.style.opacity='0',7000);});
 let app=null,profile='Auto',loading=false;
 const $=s=>document.querySelector(s),params=new URLSearchParams(location.search);
+$('#motion-settings').hidden=!touch;
+$('#motion-enable').onclick=()=>motion.enable();$('#motion-center').onclick=()=>{motion.recenter();$('#motion-status').textContent='以現在的握姿，重新出發。';};
 if(params.get('backend')==='webgl2')$('#backend').value='webgl2';
 function panel(open){if(open){app?.pause(true);$('#panel').showModal();}else $('#panel').close();}
 $('#settings').onclick=$('#boot-settings').onclick=()=>panel(true);
@@ -20,7 +26,8 @@ $('#copy').onclick=async()=>{const text=JSON.stringify(report(),null,2);try{awai
 $('#retry').onclick=()=>{const url=new URL(location.href);url.searchParams.set('backend','webgl2');location.href=url;};
 $('#start').onclick=async()=>{
  if(loading)return;loading=true;$('#start').disabled=true;$('#boot-status').textContent='正在喚醒森林…';
- try{const {startForest}=await import('./app.js');app=await startForest({profile,onPause:()=>panel(true),status:text=>$('#boot-status').textContent=text});document.body.classList.add('playing');$('#reticle').hidden=$('#pause').hidden=$('#flight-hint').hidden=false;$('#welcome').inert=true;app.pause($('#panel').open);}
+ const motionReady=touch?motion.enable():Promise.resolve();
+ try{const {startForest}=await import('./app.js');await motionReady;app=await startForest({profile,motion,onPause:()=>panel(true),status:text=>$('#boot-status').textContent=text});document.body.classList.add('playing');if(touch)document.body.classList.add('touch-device');$('#gust').hidden=false;$('#reticle').hidden=$('#pause').hidden=$('#flight-hint').hidden=false;$('#welcome').inert=true;app.pause($('#panel').open);}
  catch(error){$('#error').hidden=false;$('#error-message').textContent=String(error.message||error);$('#boot-status').textContent='啟動未完成，可下載診斷或改用 WebGL2。';}
  finally{loading=false;$('#start').disabled=false;}
 };

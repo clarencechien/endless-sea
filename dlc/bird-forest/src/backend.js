@@ -28,7 +28,7 @@ export async function createBackend(capabilities,forced,onLoss,errors){
    await renderer.init();if(backend==='webgpu'&&!renderer.backend.isWebGPUBackend)throw new Error('WebGPU initialization fell back internally');
    if(backend==='webgl2'){capabilities.webgl2Context=true;const gl=renderer.backend.gl,ext=gl?.getExtension('WEBGL_debug_renderer_info');capabilities.gpu=ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null;}
    renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.setClearColor(0xa4b9a2,1);
-   renderer.shadowMap.enabled=true;renderer.info.autoReset=false;
+   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.info.autoReset=false;
    let disposed=false;
    canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(!disposed)onLoss('WebGL context lost');});
    renderer.backend.device?.lost.then(info=>{if(!disposed)onLoss(`WebGPU device lost: ${info.reason}`);});

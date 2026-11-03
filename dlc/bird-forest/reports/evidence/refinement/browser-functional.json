@@ -1,0 +1,203 @@
+{
+  "buildSHA": "707683d3e32b91f24c98ecdcf8431da6de1f4303",
+  "buildDirty": true,
+  "upstreamSHA": "500113d7b651d2eb96392ce87c96330bdec25e15",
+  "seed": 73129,
+  "deviceCategory": "keyboard device (unverified class)",
+  "capabilities": {
+    "secureContext": true,
+    "webgpuAPI": false,
+    "webgpuAdapter": false,
+    "webgl2API": true,
+    "webgl2Context": true,
+    "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "adapter": null,
+    "deviceMemoryGB": 32,
+    "hardwareConcurrency": 5,
+    "touch": false,
+    "dpr": 1,
+    "viewport": [
+      640,
+      480
+    ],
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+    "refreshRateEstimateHz": 60
+  },
+  "backend": "webgl2",
+  "pipeline": "offline upstream cluster DAG cuts + instancing + side-view impostors",
+  "quality": {
+    "profile": "Battery-Saver",
+    "scale": 0.6,
+    "minScale": 0.55,
+    "maxScale": 1,
+    "far": 85,
+    "lod": 1.8,
+    "shadows": false
+  },
+  "resolution": {
+    "viewportCSS": [
+      640,
+      480
+    ],
+    "dpr": 1,
+    "outputPixels": [
+      640,
+      480
+    ],
+    "internalPixels": [
+      384,
+      288
+    ],
+    "upscaling": "bilinear spatial upscale; no TAA"
+  },
+  "scene": {
+    "visibleInstances": 164,
+    "impostors": 126,
+    "total": 2919,
+    "drawBatches": 14,
+    "ferns": 56,
+    "pollen": 0,
+    "lightShafts": 0
+  },
+  "input": {
+    "enabled": false,
+    "calibrated": false,
+    "status": "idle",
+    "turn": 0,
+    "lift": 0
+  },
+  "render": {
+    "calls": 77,
+    "frameCalls": 3,
+    "drawCalls": 29,
+    "triangles": 343590,
+    "points": 0,
+    "lines": 0,
+    "timestamp": 1717.404696
+  },
+  "initialLoad": {
+    "startToFirstFrameSubmitMS": 2272,
+    "navigationToStartMS": 2647.2000000476837
+  },
+  "features": {
+    "gpuDrivenClusterCulling": false,
+    "HZB": false,
+    "softwareRasterizer": false,
+    "TAA": false,
+    "grass": false,
+    "understory": true,
+    "wind": true,
+    "lightShafts": false,
+    "relief": false,
+    "shadows": false
+  },
+  "performanceGate": "This revision needs a fresh physical-device benchmark; prior phone trace documented in reports",
+  "timestamp": "2026-11-03T10:49:40.833Z",
+  "windowSeconds": 15,
+  "definitions": {
+    "onePercentLow": "1000 / mean of slowest ceil(1% * N) frame intervals",
+    "droppedFrames": "estimated missed 60Hz intervals; not measured compositor drops",
+    "cpuJS": "synchronous simulation, culling and render submission; excludes asynchronous GPU work",
+    "gpu": "backend timestamp queries when available; null otherwise"
+  },
+  "live": {
+    "frames": 10,
+    "averageFPS": 0.9022909166373421,
+    "onePercentLow": 0.40541636260439495,
+    "medianMS": 1249.9000000000015,
+    "p95MS": 2466.5999999999985,
+    "droppedFrames": 655,
+    "cpuJSMS": 20.430000013113023,
+    "gpuMS": 1758.2846384999998
+  },
+  "peakJSHeapBytes": 40541082,
+  "errors": [],
+  "run": {
+    "path": "turn",
+    "started": 30114.30000001192,
+    "warmup": 1,
+    "duration": 3,
+    "samples": [
+      {
+        "time": 31860.1,
+        "ms": 1500,
+        "cpu": 9.200000047683716,
+        "gpu": 1717.404696,
+        "scale": 0.6,
+        "far": 85
+      },
+      {
+        "time": 33110,
+        "ms": 1249.9000000000015,
+        "cpu": 17.80000001192093,
+        "gpu": 1717.404696,
+        "scale": 0.6,
+        "far": 85
+      },
+      {
+        "time": 33526.6,
+        "ms": 416.59999999999854,
+        "cpu": 9.600000023841858,
+        "gpu": 1717.404696,
+        "scale": 0.6,
+        "far": 85
+      },
+      {
+        "time": 34343.3,
+        "ms": 816.7000000000044,
+        "cpu": 17.5,
+        "gpu": 1717.404696,
+        "scale": 0.6,
+        "far": 85
+      }
+    ],
+    "route": [
+      {
+        "t": 0.2457999999880776,
+        "x": 1.9456070712900866,
+        "y": 12,
+        "z": 32.94259572535452,
+        "yaw": -1.511804326797758
+      },
+      {
+        "t": 1.7457999999880776,
+        "x": 13.425715129386242,
+        "y": 12,
+        "z": 30.1454834637723,
+        "yaw": -1.151804326797758
+      },
+      {
+        "t": 2.995699999988079,
+        "x": 21.734079096323434,
+        "y": 12,
+        "z": 24.832031850711626,
+        "yaw": -0.8518283267977576
+      },
+      {
+        "t": 3.4122999999880776,
+        "x": 24.10420519717391,
+        "y": 12,
+        "z": 22.538573420084383,
+        "yaw": -0.7518443267977579
+      },
+      {
+        "t": 4.228999999988082,
+        "x": 28.03216172757377,
+        "y": 12,
+        "z": 17.412579041576482,
+        "yaw": -0.5558363267977571
+      }
+    ],
+    "interrupted": false,
+    "summary": {
+      "frames": 4,
+      "averageFPS": 1.004217714400481,
+      "onePercentLow": 0.6666666666666666,
+      "medianMS": 816.7000000000044,
+      "p95MS": 1500,
+      "droppedFrames": 235
+    },
+    "complete": true
+  },
+  "testEnvironment": "Software GPU functional test; not a physical target device"
+}

@@ -9,18 +9,19 @@ const source=g=>({pos:Float32Array.from(g.attributes.position.array),nrm:Float32
 const packed=[];
 for(let variant=0;variant<2;variant++){
  const rand=random(190+variant),geometries=[];
- const branch=(a,b,r1,r2)=>{const delta=b.clone().sub(a),g=new THREE.CylinderGeometry(r2,r1,delta.length(),8,3);g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize()));g.translate(...a.clone().add(b).multiplyScalar(.5));geometries.push(g);};
- branch(new THREE.Vector3(),new THREE.Vector3(.3,15,0),.44,.09);
+ const branch=(a,b,r1,r2)=>{const delta=b.clone().sub(a),g=new THREE.CylinderGeometry(r2,r1,delta.length(),9,1);g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize()));g.translate(...a.clone().add(b).multiplyScalar(.5));geometries.push(g);};
+ for(let k=0;k<5;k++){const point=y=>new THREE.Vector3(Math.sin(y*.24)*.22,y,Math.sin(y*.31+variant)*.14);branch(point(k*3),point((k+1)*3),.44-k*.075,.44-(k+1)*.075);}
  const pos=[],nrm=[],uv=[];
  for(let limb=0;limb<18;limb++){
-  const angle=limb*2.399+variant,h=6+limb*.48,spread=(3.7+rand()*1.6)*(1-(h-6)/16);
-  const start=new THREE.Vector3(.02*h,h,0),tip=new THREE.Vector3(Math.cos(angle)*spread,h+2.6,Math.sin(angle)*spread);
-  branch(start,tip,.10,.025);
-  for(let j=0;j<42;j++){
+  const angle=limb*2.399+variant,h=7+limb*.43,spread=(3.7+rand()*1.6)*(1-(h-6)/16);
+  const start=new THREE.Vector3(.02*h,h,0),tip=new THREE.Vector3(Math.cos(angle)*spread,h+2.2,Math.sin(angle)*spread);
+  branch(start,tip,.10,.018);
+  for(const side of [-1,1]){const fork=tip.clone().add(new THREE.Vector3(Math.cos(angle+side*.8)*1.5,.6,Math.sin(angle+side*.8)*1.5));branch(start.clone().lerp(tip,.65),fork,.037,.008);}
+  for(let j=0;j<48;j++){
    const center=tip.clone().add(new THREE.Vector3((rand()-.5)*4,(rand()-.5)*3.3,(rand()-.5)*4));
    const direction=new THREE.Vector3(rand()-.5,.25+rand(),rand()-.5).normalize();
-   const right=new THREE.Vector3().crossVectors(direction,new THREE.Vector3(0,0,1)).normalize().multiplyScalar(.5+rand()*.35);
-   const up=new THREE.Vector3().crossVectors(right,direction).normalize().multiplyScalar(.55+rand()*.35);
+   const right=new THREE.Vector3().crossVectors(direction,new THREE.Vector3(0,0,1)).normalize().multiplyScalar(.30+rand()*.20);
+   const up=new THREE.Vector3().crossVectors(right,direction).normalize().multiplyScalar(.44+rand()*.22);
    for(const [x,y,u,v] of [[-1,-1,0,0],[1,-1,1,0],[1,1,1,1],[-1,1,0,1]]){
     const p=center.clone().addScaledVector(right,x).addScaledVector(up,y);pos.push(...p);nrm.push(...direction);uv.push(u,v);
    }

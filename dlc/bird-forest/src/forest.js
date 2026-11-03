@@ -2,8 +2,8 @@ import * as THREE from 'three/webgpu';
 import {createMaterials} from './materials.js';
 function geometry(part){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(part.pos,3));g.setAttribute('normal',new THREE.BufferAttribute(part.nrm,3));g.setAttribute('uv',new THREE.BufferAttribute(part.uv,2));g.setIndex(new THREE.BufferAttribute(part.idx,1));return g;}
 export async function createForest(renderer,scene,trees,types){
- const materials=createMaterials(),group=new THREE.Group(),batches=[],dummy=new THREE.Object3D(),targets=[];
- const previewMaterials=[new THREE.MeshLambertNodeMaterial({map:materials.bark,color:0xbac2ac}),new THREE.MeshLambertNodeMaterial({map:materials.leaves,color:0xcedca1,side:THREE.DoubleSide,alphaTest:.45})];
+ const materials=createMaterials(),group=new THREE.Group(),batches=[],dummy=new THREE.Object3D(),tint=new THREE.Color(),targets=[];
+ const previewMaterials=[new THREE.MeshStandardNodeMaterial({map:materials.bark,color:0xc3beb1,roughness:1}),new THREE.MeshStandardNodeMaterial({map:materials.leaves,color:0xc6cfac,emissive:0x14200c,roughness:.82,side:THREE.DoubleSide,alphaTest:.4})];
  const oldClear=new THREE.Color();renderer.getClearColor(oldClear);const oldAlpha=renderer.getClearAlpha(),oldTone=renderer.toneMapping;
  // A small, one-time bake from the very same DAG mesh. No external tree textures.
  for(let type=0;type<types.length;type++){
@@ -23,21 +23,21 @@ export async function createForest(renderer,scene,trees,types){
  renderer.setClearColor(oldClear,oldAlpha);renderer.toneMapping=oldTone;previewMaterials.forEach(m=>m.dispose());scene.add(group);
  const frustum=new THREE.Frustum(),vp=new THREE.Matrix4(),sphere=new THREE.Sphere(),center=new THREE.Vector3();let visible=0,impostors=0,last=-Infinity;
  function update(camera,quality,time,force=false){
-  materials.viewer.value.copy(camera.position);materials.ranges.value.set(24,54/quality.lod,90/quality.lod);materials.far.value=quality.far;
+  materials.viewer.value.copy(camera.position);materials.windTime.value=time;materials.ranges.value.set(24,54/quality.lod,90/quality.lod);materials.far.value=quality.far;
   if(!force&&time-last<.12)return;last=time;
   camera.updateMatrixWorld();vp.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);frustum.setFromProjectionMatrix(vp,camera.coordinateSystem);
   const radii=[24,54/quality.lod,90/quality.lod];for(const batch of batches)batch.count=0;visible=0;impostors=0;
   for(const t of trees){
    center.set(t.x,t.y+8*t.scale,t.z);const d=center.distanceTo(camera.position);
-   if(d>quality.far+15)continue;sphere.center.copy(center);sphere.radius=13*t.scale;if(!frustum.intersectsSphere(sphere))continue;visible++;
+   if(d>quality.far+15)continue;sphere.center.copy(center);sphere.radius=13*t.scale;if(!frustum.intersectsSphere(sphere))continue;visible++;tint.setRGB(.86+(Math.sin(t.x*2.1)+1)*.07,.90+(Math.sin(t.z*1.7)+1)*.05,.83+(Math.sin(t.x+t.z)+1)*.075);
    for(let level=0;level<4;level++){
     if(level>0&&d<radii[level-1]-8||level<3&&d>radii[level]+8)continue;
     dummy.position.set(t.x,t.y,t.z);dummy.scale.setScalar(t.scale);dummy.rotation.set(0,level===3?Math.atan2(camera.position.x-t.x,camera.position.z-t.z):t.yaw,0);dummy.updateMatrix();
     if(level===3)impostors++;
-    for(const b of batches){if(b.type!==t.type||b.level!==level)continue;b.mesh.setMatrixAt(b.count,dummy.matrix);b.roots.setXYZ(b.count,t.x,t.y+8*t.scale,t.z);b.count++;}
+    for(const b of batches){if(b.type!==t.type||b.level!==level)continue;b.mesh.setMatrixAt(b.count,dummy.matrix);b.mesh.setColorAt(b.count,tint);b.roots.setXYZ(b.count,t.x,t.y+8*t.scale,t.z);b.count++;}
    }
   }
-  for(const b of batches){b.mesh.count=b.count;b.mesh.instanceMatrix.needsUpdate=true;b.roots.needsUpdate=true;}
+  for(const b of batches){b.mesh.count=b.count;b.mesh.instanceMatrix.needsUpdate=true;if(b.mesh.instanceColor)b.mesh.instanceColor.needsUpdate=true;b.roots.needsUpdate=true;}
  }
  return {update,group,stats:()=>({visibleInstances:visible,impostors,total:trees.length,drawBatches:batches.filter(b=>b.count).length}),dispose(){for(const b of batches){b.mesh.geometry.dispose();b.mesh.material.dispose();b.mesh.dispose();}targets.forEach(t=>t.dispose());materials.leaves.dispose();materials.bark.dispose();scene.remove(group);}};
 }
