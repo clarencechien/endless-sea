@@ -119,3 +119,6 @@ Vite 使用相對資源路徑，支援 Pages 的專案子目錄。產出可用 `
 森林是同一個 Git repository 中的獨立子專案 `dlc/bird-forest/`，以獨立依賴／建置輸出到 `/forest/`；海洋仍在原路徑。`npm run dev:forest` 啟動森林開發伺服器，`npm run build:site` 建置海洋、DLC 和固定 SHA 的上游比較頁。首次需另外執行 `npm --prefix dlc/bird-forest ci`。GitHub Pages workflow 已改為發布完整站點。
 
 DLC 提供鳥的第三人稱飛行、鍵盤與手機體感、樹幹碰撞、WebGPU／WebGL2、畫質調整、固定測試路線與 JSON telemetry。使用上游離線 DAG 切片與 instancing；完整 GPU Nanite／HZB／TAA 尚未接入，實機手機與 Chromebook 的 60 FPS 驗收尚未完成。請以 DLC device matrix 為準。
+
+
+世界之窗：獨立照片窗景位於 [`/window/`](https://clarencechien.github.io/endless-sea/window/)，使用可免費商用的 Poly Haven CC0 照片，提供當地光色、微幅視差與微雨。詳見 [開發與素材說明](dlc/world-window/README.md)。

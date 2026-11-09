@@ -12,7 +12,9 @@
     "test:journey": "node tests/chapter-journey.mjs",
     "build:site": "npm run build && npm --prefix dlc/bird-forest run build && npm --prefix dlc/bird-forest run baseline && node tools/assemble-site.mjs",
     "dev:forest": "npm --prefix dlc/bird-forest run dev",
-    "test:forest": "npm --prefix dlc/bird-forest test"
+    "test:forest": "npm --prefix dlc/bird-forest test",
+    "test:window": "node --test dlc/world-window/tests/*.test.mjs",
+    "dev:window": "python3 -m http.server 5182 --bind 0.0.0.0 --directory dlc/world-window"
   },
   "dependencies": {
     "three": "^0.180.0"

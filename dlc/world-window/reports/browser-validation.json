@@ -1,0 +1,27 @@
+{
+  "errors": [],
+  "externalRequests": [],
+  "checks": [
+    "three local scenes",
+    "race-safe scene switching",
+    "day cycle / pause / reset",
+    "rain / drift",
+    "private local photo / restore",
+    "fullscreen",
+    "context loss static fallback",
+    "reduced motion",
+    "mobile portrait / landscape",
+    "no-WebGL static fallback",
+    "image failure and retry"
+  ],
+  "environment": "Chromium SwiftShader; functional validation, not physical-device FPS",
+  "unitTests": 30,
+  "productionRoutes": [
+    "/",
+    "/forest/",
+    "/forest/upstream/",
+    "/window/",
+    "/window/credits.html"
+  ],
+  "assetReproduction": "All six image/depth files reproduced byte-for-byte from pinned HDR sources"
+}

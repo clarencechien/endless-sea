@@ -30,6 +30,7 @@ jobs:
       - run: npm --prefix dlc/bird-forest ci
       - run: npm test
       - run: npm run test:forest
+      - run: npm run test:window
       - run: npm run build:site
       - uses: actions/configure-pages@v5
         with:
@@ -81,7 +82,7 @@ jobs:
                   for path in assets.paths:
                       with urlopen(urljoin(url, path), timeout=20) as response:
                           assert response.status == 200 and response.read(1), path
-                  for route, title in [('forest/', 'Bird Forest'), ('forest/upstream/', 'Nanite')]:
+                  for route, title in [('forest/', 'Bird Forest'), ('forest/upstream/', 'Nanite'), ('window/', '世界之窗')]:
                       page_url = urljoin(url, route)
                       with urlopen(page_url, timeout=20) as response:
                           page_html = response.read().decode('utf-8')
@@ -93,7 +94,10 @@ jobs:
                               continue
                           with urlopen(urljoin(page_url, path), timeout=20) as response:
                               assert response.status == 200 and response.read(1), path
-                  print(f'Ocean, Bird Forest and pinned upstream pages/assets verified: {url}')
+                  for asset in ['assets/venice.webp', 'assets/coast.webp', 'assets/meadow.webp', 'assets/venice-depth.png', 'assets/coast-depth.png', 'assets/meadow-depth.png', 'assets/sources.json', 'renderer.js', 'solar.js', 'scenes.js', 'credits.html']:
+                      with urlopen(urljoin(url, 'window/' + asset), timeout=20) as response:
+                          assert response.status == 200 and response.read(1), asset
+                  print(f'Ocean, Bird Forest, upstream and World Window pages/assets verified: {url}')
                   break
               except Exception:
                   if attempt == 11:
