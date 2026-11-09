@@ -2,8 +2,8 @@ import {scenes} from './scenes.js';
 import {sunPosition,phase,localTime} from './solar.js';
 import {createRenderer} from './renderer.js';
 const $=s=>document.querySelector(s),reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={scene:0,mode:'live',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
-let renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null;
+const state={depthSource:'approximate',scene:0,mode:'live',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
+let renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null,rainNow=0;
 const cache=new Map();
 function loadImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Image load failed'));im.src=url;});}
 function initRenderer(){try{renderer=createRenderer($('#view'));if(images)renderer.load(...images);$('#window').classList.add('ready');}catch{renderer=null;$('#status').textContent='此瀏覽器先以靜態照片陪你看風景。';}}
@@ -38,10 +38,12 @@ document.addEventListener('visibilitychange',()=>{last=0;});
 function updateHud(){const s=scenes[state.scene],date=new Date(Date.now()+state.offset*3600000),sun=sunPosition(date,s.lat,s.lon);$('#clock').textContent=localTime(date,s.tz);$('#clock').dateTime=date.toISOString();$('#phase').textContent=state.mode==='photo'?'拍攝光線':phase(sun.elevation);}
 function tick(now){requestAnimationFrame(tick);if(document.hidden){last=0;return;}const dt=last?Math.min(.1,(now-last)/1000):0;last=now;
  if(!state.paused&&!about.open){elapsed+=dt;if(state.mode==='cycle'){state.offset+=dt*.25;if(state.offset>12)state.offset-=24;}}
- const active=!state.paused&&!about.open&&(state.motion||state.rain||state.mode==='cycle');if(now-lastDraw<(active?1000/30:1000))return;lastDraw=now;
+ const active=!state.paused&&!about.open&&(state.motion||state.rain||rainNow>.001||state.mode==='cycle');if(now-lastDraw<(active?1000/30:1000))return;lastDraw=now;
  if(state.ready&&renderer&&!lost){const s=scenes[state.scene],sun=sunPosition(new Date(Date.now()+state.offset*3600000),s.lat,s.lon),night=Math.max(0,Math.min(1,(4-sun.elevation)/14)),warm=Math.max(0,1-Math.abs(sun.elevation-2)/10);
-  if(!state.paused&&!about.open){const target=state.motion?[Math.sin(elapsed*.15)*.005+pointer[0]*.009,Math.sin(elapsed*.11)*.001+pointer[1]*.003]:[0,0];drift=drift.map((v,i)=>v+(target[i]-v)*.1);}
-  renderer.draw({position:state.custom ? .5 : s.position,drift,time:elapsed,night,warm,rain:state.rain?1:0,original:state.mode==='photo'?1:0});state.frames++;
+  if(!state.paused&&!about.open){const target=state.motion?[Math.sin(elapsed*.15)*.002+pointer[0]*.008,Math.sin(elapsed*.11)*.0007+pointer[1]*.002]:[0,0];drift=drift.map((v,i)=>v+(target[i]-v)*.1);}
+  if(!state.paused&&!about.open)rainNow+=((state.rain?1:0)-rainNow)*.12;
+  document.documentElement.style.setProperty('--room-night',state.mode==='photo'?0:night);
+  renderer.draw({panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
  }
  if(now-lastHud>1000){lastHud=now;if(state.mode==='cycle')setPressed();updateHud();}
 }

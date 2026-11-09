@@ -5,7 +5,7 @@
     "three local scenes",
     "race-safe scene switching",
     "day cycle / pause / reset",
-    "rain / drift",
+    "rain / drift / rendered pause and resume",
     "private local photo / restore",
     "fullscreen",
     "context loss static fallback",
@@ -23,5 +23,6 @@
     "/window/",
     "/window/credits.html"
   ],
-  "assetReproduction": "All six image/depth files reproduced byte-for-byte from pinned HDR sources"
+  "assetReproduction": "All six image/depth files reproduced byte-for-byte from pinned HDR sources",
+  "visualReview": "Desktop original/rain and mobile scenes: perspective projection, recessed home window, curtains, sill and glass droplets; 1K source softness and approximate depth remain disclosed."
 }

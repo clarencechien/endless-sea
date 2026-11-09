@@ -3,16 +3,16 @@
 <body>
 <header><a class="brand" href="../"><span class="symbol">⌁</span> ENDLESS SEA</a><span class="edition">ANOTHER QUIET PLACE / 02</span><button id="full" class="icon" aria-label="全螢幕">⛶</button></header>
 <main>
- <div class="intro"><p class="eyebrow">A WINDOW, SOMEWHERE</p><h1>把遠方，留一扇窗。</h1><p id="caption">水岸的光，慢慢走過。</p></div>
- <section id="window" aria-label="世界之窗景色">
-  <div class="reveal"><img id="still" src="./assets/venice.webp" alt="威尼斯水岸窗景"><canvas id="view" aria-label="隨光色與視角微微變化的照片窗景"></canvas><div class="glass"></div><div class="mullion vertical"></div><div class="mullion horizontal"></div><div class="pane-edge"></div></div>
-  <div class="sill"></div><div class="location"><span id="place">VENICE, ITALY</span><span><time id="clock">—</time><span class="dot"></span><span id="phase">日光正好</span></span></div>
+ <div class="intro"><p class="eyebrow">AT HOME, ELSEWHERE</p><h1>坐一會，窗外很遠。</h1><p id="caption">水岸的光，慢慢走過。</p></div>
+ <div class="room"><div class="curtain curtain-left" aria-hidden="true"></div><div class="curtain curtain-right" aria-hidden="true"></div><section id="window" aria-label="世界之窗景色">
+  <div class="reveal"><img id="still" src="./assets/venice.webp" alt="威尼斯水岸窗景"><canvas id="view" aria-label="隨光色與視角微微變化的照片窗景"></canvas><div class="glass"></div><div class="mullion vertical"></div><div class="window-handle" aria-hidden="true"></div><div class="pane-edge"></div></div>
+  <div class="sill"></div><div class="sill-front"></div><div class="location"><span id="place">VENICE, ITALY</span><span><time id="clock">—</time><span class="dot"></span><span id="phase">日光正好</span></span></div>
   <p id="status" role="status" aria-live="polite">正在開一扇窗…</p>
- </section>
+ </section><div class="room-shadow" aria-hidden="true"></div></div>
  <nav id="places" aria-label="換一扇窗"></nav>
  <section class="controls" aria-label="窗景設定"><div class="times" role="group" aria-label="光色"><button data-time="live" aria-pressed="true">此刻</button><button data-time="photo" aria-pressed="false">原景</button><button data-time="cycle" aria-pressed="false">慢看一天</button></div><span class="separator"></span><button id="motion" aria-pressed="true">微風飄移</button><button id="rain" aria-pressed="false">玻璃微雨</button><button id="quiet" aria-pressed="false">停一會</button></section>
  <div class="time-adjust"><label for="hour">借一點別的時光</label><input id="hour" type="range" min="-12" max="12" step=".25" value="0"><output id="offset" for="hour">此刻</output></div>
  <footer><span>一張實景照片，一小段留白。</span><button id="about-open">照片與授權 ↗</button></footer>
 </main>
-<dialog id="about"><div class="dialog-head"><h2>窗外的風景</h2><button id="about-close" aria-label="關閉照片與授權">×</button></div><p>這裡是照片窗景，光色依當地日照模擬，並非即時影像。保留照片原有的雲與風景，讓時間輕輕走過。</p><p>三張實景全景照片來自 <a href="https://polyhaven.com/" target="_blank" rel="noopener noreferrer">Poly Haven</a>，以 <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a> 提供，可免費使用、修改與商用。我們調整了色調、尺寸並加入輕微視差。</p><ul id="credits"></ul><p><a href="./credits.html">完整來源與處理紀錄 ↗</a></p><label class="upload" for="photo">也可以打開自己的照片<input id="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="fine">照片只在你的瀏覽器中處理，不會上傳。重新選擇窗景可還原。</p><p id="upload-status" role="status"></p></dialog>
+<dialog id="about"><div class="dialog-head"><h2>窗外的風景</h2><button id="about-close" aria-label="關閉照片與授權">×</button></div><p>這裡是照片窗景，光色依當地日照模擬，並非即時影像。保留照片原有的雲與風景，讓時間輕輕走過。</p><p>三張實景全景照片來自 <a href="https://polyhaven.com/" target="_blank" rel="noopener noreferrer">Poly Haven</a>，以 <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a> 提供，可免費使用、修改與商用。我們校正全景透視、調整光色並加入輕微視差。深度目前為手工近似，尚未使用 Depth Anything。</p><ul id="credits"></ul><p><a href="./credits.html">完整來源與處理紀錄 ↗</a></p><label class="upload" for="photo">也可以打開自己的照片<input id="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="fine">照片只在你的瀏覽器中處理，不會上傳。重新選擇窗景可還原。</p><p id="upload-status" role="status"></p></dialog>
 <script type="module" src="./app.js"></script></body></html>
