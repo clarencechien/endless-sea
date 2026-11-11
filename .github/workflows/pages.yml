@@ -94,7 +94,7 @@ jobs:
                               continue
                           with urlopen(urljoin(page_url, path), timeout=20) as response:
                               assert response.status == 200 and response.read(1), path
-                  for asset in ['assets/venice.webp', 'assets/coast.webp', 'assets/meadow.webp', 'assets/venice-depth.png', 'assets/coast-depth.png', 'assets/meadow-depth.png', 'assets/sources.json', 'assets/lake.webp', 'assets/lake-depth.png', 'assets/lake-still.webp', 'assets/lake-LICENSE.txt', 'assets/wood.svg', 'assets/linen.svg', 'assets/plaster.svg', 'renderer.js', 'solar.js', 'scenes.js', 'credits.html']:
+                  for asset in ['assets/venice.webp', 'assets/coast.webp', 'assets/meadow.webp', 'assets/venice-depth.png', 'assets/coast-depth.png', 'assets/meadow-depth.png', 'assets/sources.json', 'assets/lake.webp', 'assets/lake-depth.png', 'assets/lake-still.webp', 'assets/lake-LICENSE.txt', 'assets/wood.svg', 'assets/linen.svg', 'assets/plaster.svg', 'renderer.js', 'room.js', 'vendor/three.module.min.js', 'vendor/three.core.min.js', 'vendor/THREE-LICENSE.txt', 'solar.js', 'scenes.js', 'credits.html']:
                       with urlopen(urljoin(url, 'window/' + asset), timeout=20) as response:
                           assert response.status == 200 and response.read(1), asset
                   print(f'Ocean, Bird Forest, upstream and World Window pages/assets verified: {url}')

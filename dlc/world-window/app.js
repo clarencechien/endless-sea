@@ -2,12 +2,15 @@ import {scenes} from './scenes.js?v=20261111';
 import {sunPosition,phase,localTime} from './solar.js';
 import {createRenderer} from './renderer.js?v=20261111';
 const $=s=>document.querySelector(s),reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={depthSource:'approximate',scene:3,mode:'photo',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
-let renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null,rainNow=0;
+const state={room:'css',depthSource:'approximate',scene:3,mode:'photo',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
+let roomRenderer=null,renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null,rainNow=0;
 const cache=new Map();
 function loadImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Image load failed'));im.src=url;});}
 function initRenderer(){try{renderer=createRenderer($('#view'));if(images)renderer.load(...images);$('#window').classList.add('ready');}catch{renderer=null;$('#status').textContent='此瀏覽器先以靜態照片陪你看風景。';}}
 initRenderer();
+if(renderer)import('./room.js?v=20261111-room3d').then(({createRoom})=>{
+ try{roomRenderer=createRoom($('#room-view'),$('.room'),$('#view'),mode=>state.room=mode);roomRenderer.draw();}catch{state.room='css';}
+}).catch(()=>{state.room='css';});
 function sourceURLs(i){return [`./assets/${scenes[i].id}.webp`,`./assets/${scenes[i].id}-depth.png`];}
 function setPressed(){document.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.scene===state.scene&&!state.custom)));document.querySelectorAll('[data-time]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.time===state.mode)));for(const [id,key]of [['motion','motion'],['rain','rain'],['quiet','paused']])$('#'+id).setAttribute('aria-pressed',String(state[key]));$('#quiet').textContent=state.paused?'繼續看':'停一會';$('#offset').value=state.offset===0?'此刻':`${state.offset>0?'+':''}${state.offset.toFixed(1)} 小時`;$('#hour').value=state.offset;}
 async function selectScene(i){
@@ -44,8 +47,9 @@ function tick(now){requestAnimationFrame(tick);if(document.hidden){last=0;return
   if(!state.paused&&!about.open)rainNow+=((state.rain?1:0)-rainNow)*.12;
   document.documentElement.style.setProperty('--room-night',state.mode==='photo'?0:night);
   document.documentElement.style.setProperty('--room-warm',state.mode==='photo'?.25:warm*(1.-night));
-  renderer.draw({animate:state.motion?1:0,panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
+  roomRenderer?.draw({night:state.mode==='photo'?0:night,warm:state.mode==='photo'?.25:warm,drift});
+  renderer.draw({animate:state.motion?1:0,panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,drift:state.room==='webgl'?drift.map(v=>v*.2):drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
  }
  if(now-lastHud>1000){lastHud=now;if(state.mode==='cycle')setPressed();updateHud();}
 }
-window.worldWindow={getState:()=>({...state,elapsed,drift:[...drift],renderer:renderer?'webgl':'static',lost}),selectScene};setPressed();selectScene(3);requestAnimationFrame(tick);
+window.worldWindow={getState:()=>({...state,roomStats:roomRenderer?.getStats(),elapsed,drift:[...drift],renderer:renderer?'webgl':'static',lost}),selectScene};setPressed();selectScene(3);requestAnimationFrame(tick);

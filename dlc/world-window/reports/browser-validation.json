@@ -2,6 +2,8 @@
   "errors": [],
   "externalRequests": [],
   "checks": [
+    "3D room / static frame reuse / geometry and pixel budgets",
+    "room context loss and recovery / WebGL1 and module failure CSS fallback",
     "four local scenes including native 4K lake",
     "masked lake motion / sky stability / motion off",
     "race-safe scene switching",
@@ -14,10 +16,10 @@
     "mobile portrait / landscape",
     "no-WebGL static fallback",
     "image failure and retry",
-    "versioned production modules and default 4K lake"
+    "DPR 3 mobile room and exterior pixel caps"
   ],
   "environment": "Chromium SwiftShader; functional validation, not physical-device FPS",
-  "unitTests": 30,
+  "unitTests": 32,
   "productionRoutes": [
     "/",
     "/forest/",
@@ -26,5 +28,18 @@
     "/window/credits.html"
   ],
   "assetReproduction": "New lake photo, approximate depth/water mask and perspective preview reproduced byte-for-byte from pinned source; original six assets unchanged.",
-  "visualReview": "Native 4K lake with daylight and local-night rain; matte interior, grain, curtain folds and softer night shadow edges; desktop and four mobile scenes reviewed. Depth remains approximate; older scenes remain 1K."
+  "visualReview": "Desktop day/rain/local light and mobile: true 3D recessed joinery, bevelled oak sill, ceramic cup and folded curtains; uninterrupted photo aperture. Outdoor depth remains approximate.",
+  "roomBudget": {
+    "desktop": {
+      "calls": 23,
+      "triangles": 9364,
+      "pixels": 994480
+    },
+    "mobileDPR3": {
+      "calls": 23,
+      "triangles": 9364,
+      "pixels": 413985
+    },
+    "fpsMeasured": false
+  }
 }

@@ -2,3 +2,5 @@ node_modules/
 dist/
 .playwright/
 *.log
+
+dlc/world-window/vendor/
