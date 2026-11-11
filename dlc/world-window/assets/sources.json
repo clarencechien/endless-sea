@@ -43,5 +43,27 @@
     "depth": "assets/meadow-depth.png",
     "processing": "HDR ACES tone mapping to sRGB WebP; artist-authored approximate depth (R soft / G sharp), not Depth Anything inference. Original 1024x512 panorama.",
     "sourceRevision": "739478bc5ac18509be78095ed8f2fa4403b8207e"
+  },
+  {
+    "id": "lake",
+    "asset": "Jordan Pond",
+    "provider": "Matthew Petroff / Pannellum",
+    "author": "Matthew Petroff",
+    "license": "CC-BY-SA-3.0",
+    "licenseURL": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "licenseEvidence": "https://github.com/mpetroff/pannellum/blob/818b698d2b60d9cd534a9395ea838d4d33ccb06d/examples/example-image-copying.txt",
+    "authorEvidence": "https://github.com/mpetroff/pannellum/blob/818b698d2b60d9cd534a9395ea838d4d33ccb06d/examples/example-tour.json",
+    "sourcePage": "https://github.com/mpetroff/pannellum/tree/818b698d2b60d9cd534a9395ea838d4d33ccb06d/examples",
+    "downloadURL": "https://raw.githubusercontent.com/mpetroff/pannellum/818b698d2b60d9cd534a9395ea838d4d33ccb06d/examples/examplepano.jpg",
+    "sourceSHA256": "505a9c0093677ab7cd636584bc37672ef3eee4dda2f4f057854e762ed04ffd07",
+    "sourceRevision": "818b698d2b60d9cd534a9395ea838d4d33ccb06d",
+    "sourceDimensions": [
+      4096,
+      2048
+    ],
+    "photo": "assets/lake.webp",
+    "depth": "assets/lake-depth.png",
+    "preview": "assets/lake-still.webp",
+    "processing": "Native 4096x2048 JPEG converted to WebP without upscaling; perspective preview; artist-authored approximate depth R/G and water mask B. Not Depth Anything inference. Image adaptations licensed CC BY-SA 3.0."
   }
 ]

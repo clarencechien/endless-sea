@@ -2,7 +2,8 @@
   "errors": [],
   "externalRequests": [],
   "checks": [
-    "three local scenes",
+    "four local scenes including native 4K lake",
+    "masked lake motion / sky stability / motion off",
     "race-safe scene switching",
     "day cycle / pause / reset",
     "rain / drift / rendered pause and resume",
@@ -12,7 +13,8 @@
     "reduced motion",
     "mobile portrait / landscape",
     "no-WebGL static fallback",
-    "image failure and retry"
+    "image failure and retry",
+    "versioned production modules and default 4K lake"
   ],
   "environment": "Chromium SwiftShader; functional validation, not physical-device FPS",
   "unitTests": 30,
@@ -23,6 +25,6 @@
     "/window/",
     "/window/credits.html"
   ],
-  "assetReproduction": "All six image/depth files reproduced byte-for-byte from pinned HDR sources",
-  "visualReview": "Desktop original/rain and mobile scenes: perspective projection, recessed home window, curtains, sill and glass droplets; 1K source softness and approximate depth remain disclosed."
+  "assetReproduction": "New lake photo, approximate depth/water mask and perspective preview reproduced byte-for-byte from pinned source; original six assets unchanged.",
+  "visualReview": "Native 4K lake with daylight and local-night rain; matte interior, grain, curtain folds and softer night shadow edges; desktop and four mobile scenes reviewed. Depth remains approximate; older scenes remain 1K."
 }

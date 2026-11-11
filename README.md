@@ -121,4 +121,4 @@ Vite 使用相對資源路徑，支援 Pages 的專案子目錄。產出可用 `
 DLC 提供鳥的第三人稱飛行、鍵盤與手機體感、樹幹碰撞、WebGPU／WebGL2、畫質調整、固定測試路線與 JSON telemetry。使用上游離線 DAG 切片與 instancing；完整 GPU Nanite／HZB／TAA 尚未接入，實機手機與 Chromebook 的 60 FPS 驗收尚未完成。請以 DLC device matrix 為準。
 
 
-世界之窗：獨立照片窗景位於 [`/window/`](https://clarencechien.github.io/endless-sea/window/)，使用可免費商用的 Poly Haven CC0 照片，提供當地光色、微幅視差與微雨。詳見 [開發與素材說明](dlc/world-window/README.md)。
+世界之窗：獨立照片窗景位於 [`/window/`](https://clarencechien.github.io/endless-sea/window/)，預設為 Matthew Petroff 的原生 4K 山湖照片（CC BY-SA 3.0），並保留 Poly Haven CC0 照片，提供當地光色、微幅視差與微雨。詳見 [開發與素材說明](dlc/world-window/README.md)。

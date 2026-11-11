@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#e9e4d9"><title>世界之窗 · Endless Sea</title><link rel="icon" href="./window.svg"><link rel="stylesheet" href="./style.css"></head>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#e9e4d9"><title>世界之窗 · Endless Sea</title><link rel="icon" href="./window.svg"><link rel="stylesheet" href="./style.css?v=20261111"></head>
 <body>
 <header><a class="brand" href="../"><span class="symbol">⌁</span> ENDLESS SEA</a><span class="edition">ANOTHER QUIET PLACE / 02</span><button id="full" class="icon" aria-label="全螢幕">⛶</button></header>
 <main>
- <div class="intro"><p class="eyebrow">AT HOME, ELSEWHERE</p><h1>坐一會，窗外很遠。</h1><p id="caption">水岸的光，慢慢走過。</p></div>
+ <div class="intro"><p class="eyebrow">AT HOME, ELSEWHERE</p><h1>坐一會，窗外很遠。</h1><p id="caption">山與湖，都不用趕路。</p></div>
  <div class="room"><div class="curtain curtain-left" aria-hidden="true"></div><div class="curtain curtain-right" aria-hidden="true"></div><section id="window" aria-label="世界之窗景色">
-  <div class="reveal"><img id="still" src="./assets/venice.webp" alt="威尼斯水岸窗景"><canvas id="view" aria-label="隨光色與視角微微變化的照片窗景"></canvas><div class="glass"></div><div class="mullion vertical"></div><div class="window-handle" aria-hidden="true"></div><div class="pane-edge"></div></div>
-  <div class="sill"></div><div class="sill-front"></div><div class="location"><span id="place">VENICE, ITALY</span><span><time id="clock">—</time><span class="dot"></span><span id="phase">日光正好</span></span></div>
+  <div class="reveal"><img id="still" src="./assets/lake-still.webp" alt="山湖窗景"><canvas id="view" aria-label="隨光色與視角微微變化的照片窗景"></canvas><div class="glass"></div><div class="mullion vertical"></div><div class="window-handle" aria-hidden="true"></div><div class="pane-edge"></div></div>
+  <div class="sill"></div><div class="sill-front"></div><div class="cup" aria-hidden="true"><i></i></div><div class="location"><span id="place">JORDAN POND, MAINE</span><span><time id="clock">—</time><span class="dot"></span><span id="phase">日光正好</span></span></div>
   <p id="status" role="status" aria-live="polite">正在開一扇窗…</p>
  </section><div class="room-shadow" aria-hidden="true"></div></div>
  <nav id="places" aria-label="換一扇窗"></nav>
@@ -14,5 +14,5 @@
  <div class="time-adjust"><label for="hour">借一點別的時光</label><input id="hour" type="range" min="-12" max="12" step=".25" value="0"><output id="offset" for="hour">此刻</output></div>
  <footer><span>一張實景照片，一小段留白。</span><button id="about-open">照片與授權 ↗</button></footer>
 </main>
-<dialog id="about"><div class="dialog-head"><h2>窗外的風景</h2><button id="about-close" aria-label="關閉照片與授權">×</button></div><p>這裡是照片窗景，光色依當地日照模擬，並非即時影像。保留照片原有的雲與風景，讓時間輕輕走過。</p><p>三張實景全景照片來自 <a href="https://polyhaven.com/" target="_blank" rel="noopener noreferrer">Poly Haven</a>，以 <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a> 提供，可免費使用、修改與商用。我們校正全景透視、調整光色並加入輕微視差。深度目前為手工近似，尚未使用 Depth Anything。</p><ul id="credits"></ul><p><a href="./credits.html">完整來源與處理紀錄 ↗</a></p><label class="upload" for="photo">也可以打開自己的照片<input id="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="fine">照片只在你的瀏覽器中處理，不會上傳。重新選擇窗景可還原。</p><p id="upload-status" role="status"></p></dialog>
-<script type="module" src="./app.js"></script></body></html>
+<dialog id="about"><div class="dialog-head"><h2>窗外的風景</h2><button id="about-close" aria-label="關閉照片與授權">×</button></div><p>這裡是照片窗景，光色依當地日照模擬，並非即時影像。保留照片原有的雲與風景，讓時間輕輕走過。</p><p>山湖實景由 Matthew Petroff 拍攝，原圖 4096 × 2048，依 <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a> 使用；我們轉為 WebP、製作透視預覽，衍生照片保留相同授權。其餘三張實景全景照片來自 <a href="https://polyhaven.com/" target="_blank" rel="noopener noreferrer">Poly Haven</a>，以 <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer">CC0</a> 提供，可免費使用、修改與商用。其餘三張原圖為 1K 全景，裁切後細節較少。我們校正全景透視、調整光色並加入輕微視差。深度目前為手工近似，尚未使用 Depth Anything。</p><ul id="credits"></ul><p><a href="./credits.html">完整來源與處理紀錄 ↗</a></p><label class="upload" for="photo">也可以打開自己的照片<input id="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="fine">照片只在你的瀏覽器中處理，不會上傳。重新選擇窗景可還原。</p><p id="upload-status" role="status"></p></dialog>
+<script type="module" src="./app.js?v=20261111"></script></body></html>

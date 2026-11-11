@@ -1,0 +1,9 @@
+Jordan Pond panorama — Matthew Petroff
+Source: https://raw.githubusercontent.com/mpetroff/pannellum/818b698d2b60d9cd534a9395ea838d4d33ccb06d/examples/examplepano.jpg
+Source revision: 818b698d2b60d9cd534a9395ea838d4d33ccb06d
+Changes: WebP conversion, perspective preview, approximate depth and water mask. These adaptations remain CC BY-SA 3.0.
+
+This work is licensed under the Creative Commons Attribution-ShareAlike 3.0
+Unported License. To view a copy of this license, visit
+http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative
+Commons, 444 Castro Street, Suite 900, Mountain View, California, 94041, USA.

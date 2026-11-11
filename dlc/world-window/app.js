@@ -1,8 +1,8 @@
-import {scenes} from './scenes.js';
+import {scenes} from './scenes.js?v=20261111';
 import {sunPosition,phase,localTime} from './solar.js';
-import {createRenderer} from './renderer.js';
+import {createRenderer} from './renderer.js?v=20261111';
 const $=s=>document.querySelector(s),reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const state={depthSource:'approximate',scene:0,mode:'live',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
+const state={depthSource:'approximate',scene:3,mode:'photo',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
 let renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null,rainNow=0;
 const cache=new Map();
 function loadImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Image load failed'));im.src=url;});}
@@ -13,10 +13,10 @@ function setPressed(){document.querySelectorAll('[data-scene]').forEach(b=>b.set
 async function selectScene(i){
  const token=++request;$('#status').textContent='正在開一扇窗…';
  try{if(!cache.has(i))cache.set(i,Promise.all(sourceURLs(i).map(loadImage)));const loaded=await cache.get(i);if(token!==request)return;
-  images=loaded;renderer?.load(...loaded);state.scene=i;state.custom=false;state.ready=true;drift=[0,0];$('#still').src=sourceURLs(i)[0];$('#still').alt=`${scenes[i].name}實景窗景`;$('#caption').textContent=scenes[i].caption;$('#place').textContent=scenes[i].en;$('#status').textContent=renderer?'':'此瀏覽器先以靜態照片陪你看風景。';if(uploadedURL){URL.revokeObjectURL(uploadedURL);uploadedURL=null;}setPressed();updateHud();
+  images=loaded;renderer?.load(...loaded);state.scene=i;state.custom=false;state.ready=true;drift=[0,0];$('#still').src=scenes[i].preview||sourceURLs(i)[0];$('#still').alt=`${scenes[i].name}實景窗景`;$('#caption').textContent=scenes[i].caption;$('#place').textContent=scenes[i].en;$('#status').textContent=renderer?'':'此瀏覽器先以靜態照片陪你看風景。';if(uploadedURL){URL.revokeObjectURL(uploadedURL);uploadedURL=null;}setPressed();updateHud();
  }catch{cache.delete(i);if(token===request)$('#status').textContent='窗景沒能載入，請再選一次。';}
 }
-scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='place';b.dataset.scene=i;b.innerHTML=`<span>${s.name}</span><small>${String(i+1).padStart(2,'0')} / WINDOW</small>`;b.onclick=()=>selectScene(i);$('#places').appendChild(b);const li=document.createElement('li'),a=document.createElement('a');a.href='https://polyhaven.com/a/'+s.asset;a.target='_blank';a.rel='noopener noreferrer';a.textContent=`${s.name} · ${s.asset.replaceAll('_',' ')}`;li.appendChild(a);$('#credits').appendChild(li);});
+scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='place';b.dataset.scene=i;b.innerHTML=`<span>${s.name}</span><small>${String(i+1).padStart(2,'0')} / WINDOW</small>`;b.onclick=()=>selectScene(i);$('#places').appendChild(b);const li=document.createElement('li'),a=document.createElement('a');a.href=s.source||'https://polyhaven.com/a/'+s.asset;a.target='_blank';a.rel='noopener noreferrer';a.textContent=`${s.name} · ${s.author||'Poly Haven'} · ${s.license||'CC0'}`;li.appendChild(a);$('#credits').appendChild(li);});
 document.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.time;if(state.mode==='live')state.offset=0;setPressed();updateHud();});
 $('#hour').oninput=e=>{state.offset=+e.target.value;state.mode='live';setPressed();updateHud();};
 $('#motion').onclick=()=>{state.motion=!state.motion;if(!state.motion)drift=[0,0];setPressed();};$('#rain').onclick=()=>{state.rain=!state.rain;setPressed();};$('#quiet').onclick=()=>{state.paused=!state.paused;setPressed();};
@@ -43,8 +43,9 @@ function tick(now){requestAnimationFrame(tick);if(document.hidden){last=0;return
   if(!state.paused&&!about.open){const target=state.motion?[Math.sin(elapsed*.15)*.002+pointer[0]*.008,Math.sin(elapsed*.11)*.0007+pointer[1]*.002]:[0,0];drift=drift.map((v,i)=>v+(target[i]-v)*.1);}
   if(!state.paused&&!about.open)rainNow+=((state.rain?1:0)-rainNow)*.12;
   document.documentElement.style.setProperty('--room-night',state.mode==='photo'?0:night);
-  renderer.draw({panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
+  document.documentElement.style.setProperty('--room-warm',state.mode==='photo'?.25:warm*(1.-night));
+  renderer.draw({animate:state.motion?1:0,panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
  }
  if(now-lastHud>1000){lastHud=now;if(state.mode==='cycle')setPressed();updateHud();}
 }
-window.worldWindow={getState:()=>({...state,elapsed,drift:[...drift],renderer:renderer?'webgl':'static',lost}),selectScene};setPressed();selectScene(0);requestAnimationFrame(tick);
+window.worldWindow={getState:()=>({...state,elapsed,drift:[...drift],renderer:renderer?'webgl':'static',lost}),selectScene};setPressed();selectScene(3);requestAnimationFrame(tick);
