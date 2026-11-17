@@ -2,3 +2,18 @@ import test from 'node:test';import assert from 'node:assert/strict';import{read
 test('solar altitude distinguishes equinox noon and midnight and stays finite at poles',()=>{assert.ok(sunPosition(new Date('2026-03-20T12:00:00Z'),0,0).elevation>85);assert.ok(sunPosition(new Date('2026-03-20T00:00:00Z'),0,0).elevation< -85);for(const lat of [-90,-45,0,45,90])assert.ok(Number.isFinite(sunPosition(new Date('2026-11-09T12:00:00Z'),lat,12).elevation));});
 test('local time respects Venice DST and South Africa time zone',()=>{assert.equal(localTime(new Date('2026-07-09T12:00:00Z'),'Europe/Rome'),'14:00');assert.equal(localTime(new Date('2026-11-09T12:00:00Z'),'Europe/Rome'),'13:00');assert.equal(localTime(new Date('2026-11-09T12:00:00Z'),'Africa/Johannesburg'),'14:00');assert.equal(phase(-15),'夜色漸深');});
 test('every scene has local photos, depth and explicit photo licensing',()=>{const sources=JSON.parse(readFileSync(new URL('../assets/sources.json',import.meta.url)));for(const s of scenes){const entry=sources.find(e=>e.id===s.id);assert.ok(['CC0-1.0','CC-BY-SA-3.0'].includes(entry.license));if(entry.license==='CC-BY-SA-3.0'){assert.equal(entry.author,'Matthew Petroff');assert.deepEqual(entry.sourceDimensions,[4096,2048]);assert.ok(existsSync(new URL('../assets/lake-LICENSE.txt',import.meta.url)));}assert.match(entry.sourceSHA256,/^[a-f0-9]{64}$/);for(const key of ['photo','depth'])assert.ok(existsSync(new URL('../'+entry[key],import.meta.url)));assert.match(entry.licenseEvidence,/Poly-Haven|mpetroff\/pannellum/);}});
+
+test('installed model maps match recorded inference and scene labels',async()=>{
+ const {createHash}=await import('node:crypto');
+ const manifest=JSON.parse(readFileSync(new URL('../assets/depth-inference.json',import.meta.url)));
+ assert.equal(manifest.status,'installed');
+ assert.equal(manifest.model.id,'depth-anything/Depth-Anything-V2-Small-hf');
+ assert.match(manifest.model.revision,/^[a-f0-9]{40}$/);
+ for(const scene of scenes){
+  assert.equal(scene.depthSource,'depth-anything-v2-small');
+  const record=manifest.scenes.find(s=>s.id===scene.id);
+  const bytes=readFileSync(new URL(`../assets/${scene.id}-depth.png`,import.meta.url));
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),record.depthSHA256);
+  assert.equal(record.waterMaskPreserved,true);
+ }
+});

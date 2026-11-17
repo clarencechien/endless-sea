@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "status": "installed",
+  "createdUTC": "2026-11-17T02:02:06.795859+00:00",
+  "model": {
+    "id": "depth-anything/Depth-Anything-V2-Small-hf",
+    "revision": "5426e4f0f36572d16453bbda7a8389317b1bef99",
+    "weightsSHA256": "3152477ce0d8d6978d76b995120de97cb5b928701fd0f817769f59e249a16b70",
+    "license": "Apache-2.0",
+    "licenseEvidence": "https://github.com/DepthAnything/Depth-Anything-V2/blob/a561b849ebae10a6f5ef49e26c83cbbcd36c71bf/README.md#license",
+    "torch": "2.5.1+cpu",
+    "transformers": "4.48.3"
+  },
+  "generatorSHA256": "23e963827410a1965f3c727f9b340403271eec76e9a57e716fb632c4600d8c50",
+  "projectionCodeSHA256": "6087f5db49874da5afe3f3d5372d07b89408835094a44b3fb2932caa49cbabc9",
+  "projection": {
+    "width": 1008,
+    "height": 756,
+    "verticalFOV": 75.0,
+    "pitchSlope": 0.025
+  },
+  "depthMeaning": "relative inverse depth; higher is nearer; non-metric",
+  "scenes": [
+    {
+      "id": "lake",
+      "center": 0.9,
+      "sourcePhotoSHA256": "0213fe7c3349d33ebe454fd6b7e6d2598497b0d1959f5214362f55d3497871ac",
+      "originalDepthSHA256": "f9a62d206faf14b603fb1d7ef610f91a2a1a1dbcaa8c260cdd076047efa67e36",
+      "viewSHA256": "8e64c80e01fac8dbc743d8a8f2c839b820b3d1b408524f72395a012c618e1976",
+      "inputRGBSHA256": "b8c09e18edea20b2da82fd370e3f62cf51ed2c015992592fd9fd48dd44b5094d",
+      "depthSHA256": "cae02669b8cf130e3d8298cb3379715e61e77a2148ae42053a211a10923eb4f1",
+      "percentiles2and98": [
+        0.0,
+        7.330754423141479
+      ],
+      "panoramaInferredCoverage": 0.08877277374267578,
+      "waterMaskPreserved": true
+    },
+    {
+      "id": "venice",
+      "center": 0.23,
+      "sourcePhotoSHA256": "1ca7d493799538a1c11971c8bd1b5b96abcd79f174e402c236f6793b493c572c",
+      "originalDepthSHA256": "2fcdc888acc3a023fa4cd05d606f48af39bccfd429aed7c2ea49891eccb4562b",
+      "viewSHA256": "eeaf663797bf1560fba090b30c59cf9672f30769a36241535177987d734fdbf6",
+      "inputRGBSHA256": "3b240b12a22a39b6c4370fc95d5f74d710e3e6f677fd594a1365dbccdc8c90e7",
+      "depthSHA256": "3ecb34c92eddd2b255394fefaa0b76cc5345af0267798c9c90254769025bee24",
+      "percentiles2and98": [
+        0.0,
+        8.715001564025876
+      ],
+      "panoramaInferredCoverage": 0.08893775939941406,
+      "waterMaskPreserved": true
+    },
+    {
+      "id": "coast",
+      "center": 0.5,
+      "sourcePhotoSHA256": "2613d7a08c3ecd17c644b1239d7b4575b812af9e5b18a741c26cfaa39d132409",
+      "originalDepthSHA256": "8810a6216da1c0663a7e179613a42b3e6ef89c6378c955efc57039f53597a550",
+      "viewSHA256": "c3becb71ec2526941a56855ad5cbc4248fa7637ff1ec657fc62e268c2f664054",
+      "inputRGBSHA256": "f2171599f32252c70f88f55220eaa8aac7894c74d16737292e162c591669ebdb",
+      "depthSHA256": "0c1617a2733e3c1259fc220d3eceb268300ba1c1d02ae01fee293dcb65ba8c9c",
+      "percentiles2and98": [
+        0.0,
+        7.4871166515350325
+      ],
+      "panoramaInferredCoverage": 0.08863067626953125,
+      "waterMaskPreserved": true
+    },
+    {
+      "id": "meadow",
+      "center": 0.46,
+      "sourcePhotoSHA256": "266d2805846e6d45e6b1e98c9eeeb8f8885823724d2b10d0258385cfdebcda2d",
+      "originalDepthSHA256": "8810a6216da1c0663a7e179613a42b3e6ef89c6378c955efc57039f53597a550",
+      "viewSHA256": "2b087c68e878d4e556a7023526675f692b49601cb14cfdf058fd78b6dd27c2d6",
+      "inputRGBSHA256": "a7b3745cce5077060be3584749f2f10c7f52061ebbb9da05eb40c64d8fc996ce",
+      "depthSHA256": "cca3015803895068ff9c78802eca7e4af2d5bd54cae8206a17bf4e2f8132157f",
+      "percentiles2and98": [
+        0.0,
+        8.152642326354979
+      ],
+      "panoramaInferredCoverage": 0.08863449096679688,
+      "waterMaskPreserved": true
+    }
+  ]
+}

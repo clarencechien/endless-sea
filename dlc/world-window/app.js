@@ -1,4 +1,4 @@
-import {scenes} from './scenes.js?v=20261111';
+import {scenes} from './scenes.js?v=20261117-depth';
 import {sunPosition,phase,localTime} from './solar.js';
 import {createRenderer} from './renderer.js?v=20261111';
 const $=s=>document.querySelector(s),reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -11,12 +11,12 @@ initRenderer();
 if(renderer)import('./room.js?v=20261111-room3d').then(({createRoom})=>{
  try{roomRenderer=createRoom($('#room-view'),$('.room'),$('#view'),mode=>state.room=mode);roomRenderer.draw();}catch{state.room='css';}
 }).catch(()=>{state.room='css';});
-function sourceURLs(i){return [`./assets/${scenes[i].id}.webp`,`./assets/${scenes[i].id}-depth.png`];}
+function sourceURLs(i){return [`./assets/${scenes[i].id}.webp`,`./assets/${scenes[i].id}-depth.png?v=20261117-depth`];}
 function setPressed(){document.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.scene===state.scene&&!state.custom)));document.querySelectorAll('[data-time]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.time===state.mode)));for(const [id,key]of [['motion','motion'],['rain','rain'],['quiet','paused']])$('#'+id).setAttribute('aria-pressed',String(state[key]));$('#quiet').textContent=state.paused?'繼續看':'停一會';$('#offset').value=state.offset===0?'此刻':`${state.offset>0?'+':''}${state.offset.toFixed(1)} 小時`;$('#hour').value=state.offset;}
 async function selectScene(i){
  const token=++request;$('#status').textContent='正在開一扇窗…';
  try{if(!cache.has(i))cache.set(i,Promise.all(sourceURLs(i).map(loadImage)));const loaded=await cache.get(i);if(token!==request)return;
-  images=loaded;renderer?.load(...loaded);state.scene=i;state.custom=false;state.ready=true;drift=[0,0];$('#still').src=scenes[i].preview||sourceURLs(i)[0];$('#still').alt=`${scenes[i].name}實景窗景`;$('#caption').textContent=scenes[i].caption;$('#place').textContent=scenes[i].en;$('#status').textContent=renderer?'':'此瀏覽器先以靜態照片陪你看風景。';if(uploadedURL){URL.revokeObjectURL(uploadedURL);uploadedURL=null;}setPressed();updateHud();
+  images=loaded;renderer?.load(...loaded);state.scene=i;state.custom=false;state.depthSource=scenes[i].depthSource;state.ready=true;drift=[0,0];$('#still').src=scenes[i].preview||sourceURLs(i)[0];$('#still').alt=`${scenes[i].name}實景窗景`;$('#caption').textContent=scenes[i].caption;$('#place').textContent=scenes[i].en;$('#status').textContent=renderer?'':'此瀏覽器先以靜態照片陪你看風景。';if(uploadedURL){URL.revokeObjectURL(uploadedURL);uploadedURL=null;}setPressed();updateHud();
  }catch{cache.delete(i);if(token===request)$('#status').textContent='窗景沒能載入，請再選一次。';}
 }
 scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='place';b.dataset.scene=i;b.innerHTML=`<span>${s.name}</span><small>${String(i+1).padStart(2,'0')} / WINDOW</small>`;b.onclick=()=>selectScene(i);$('#places').appendChild(b);const li=document.createElement('li'),a=document.createElement('a');a.href=s.source||'https://polyhaven.com/a/'+s.asset;a.target='_blank';a.rel='noopener noreferrer';a.textContent=`${s.name} · ${s.author||'Poly Haven'} · ${s.license||'CC0'}`;li.appendChild(a);$('#credits').appendChild(li);});
@@ -32,7 +32,7 @@ $('#photo').onchange=async e=>{
  try{if(file.size>20*1024*1024)throw Error('請選擇小於 20 MB 的照片。');$('#upload-status').textContent='正在打開照片…';url=URL.createObjectURL(file);const im=await loadImage(url);if(token!==request){URL.revokeObjectURL(url);return;}
   const ratio=Math.min(1,2048/Math.max(im.naturalWidth,im.naturalHeight));const photo=document.createElement('canvas');photo.width=Math.round(im.naturalWidth*ratio);photo.height=Math.round(im.naturalHeight*ratio);photo.getContext('2d').drawImage(im,0,0,photo.width,photo.height);
   const depth=document.createElement('canvas');depth.width=depth.height=64;const c=depth.getContext('2d'),g=c.createLinearGradient(0,0,0,64);g.addColorStop(0,'#080800');g.addColorStop(.45,'#181800');g.addColorStop(1,'#d0d000');c.fillStyle=g;c.fillRect(0,0,64,64);
-  renderer?.load(photo,depth);images=[photo,depth];if(uploadedURL)URL.revokeObjectURL(uploadedURL);uploadedURL=url;state.custom=true;state.ready=true;$('#still').src=url;$('#still').alt='你選擇的私人照片';$('#caption').textContent='你的照片，借這座城市的光。';$('#place').textContent='YOUR WINDOW';$('#upload-status').textContent='已打開，只留在你的瀏覽器。';$('#status').textContent='';setPressed();about.close();
+  renderer?.load(photo,depth);images=[photo,depth];if(uploadedURL)URL.revokeObjectURL(uploadedURL);uploadedURL=url;state.custom=true;state.depthSource='approximate';state.ready=true;$('#still').src=url;$('#still').alt='你選擇的私人照片';$('#caption').textContent='你的照片，借這座城市的光。';$('#place').textContent='YOUR WINDOW';$('#upload-status').textContent='已打開，只留在你的瀏覽器。';$('#status').textContent='';setPressed();about.close();
  }catch(error){if(url)URL.revokeObjectURL(url);$('#upload-status').textContent=error.message.startsWith('請')?error.message:'這張照片讀取失敗，請試試 JPG、PNG 或 WebP。';}
 };
 $('#view').addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;$('#window').classList.remove('ready');$('#status').textContent='暫時以靜態照片顯示。';});
