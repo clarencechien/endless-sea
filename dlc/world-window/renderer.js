@@ -28,6 +28,9 @@ vec3 rivulet(vec2 q){
 // A conservative, painted water mask keeps the shore, trees and rocks still.
 vec2 waterOffset(vec2 p){float water=texture2D(depth,p).b*animate;if(water<.001)return vec2(0.);return vec2(sin(p.y*740.+time*.65)+sin(p.x*493.-time*.4),sin(p.x*620.+time*.7))*.00016*water;}
 vec3 lighting(vec3 source){
+ // Original-photo mode must not depend on changing solar uniforms, even through
+ // floating-point rounding in mix(c, source, 1.).
+ if(original>.5)return source;
  vec3 c=source*mix(vec3(1.),vec3(.35,.48,.72),night*.8)*mix(1.,.5,night);
  c=mix(c,c*vec3(1.1,.94,.83)+vec3(.035,.009,0.),warm*.35);return mix(c,source,original);
 }

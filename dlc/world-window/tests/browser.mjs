@@ -1,8 +1,7 @@
-import{chromium}from'playwright';import{createHash}from'node:crypto';import assert from'node:assert/strict';import{mkdir,writeFile}from'node:fs/promises';
+import{chromium}from'playwright';import assert from'node:assert/strict';import{mkdir,writeFile}from'node:fs/promises';
 const base=process.env.WINDOW_URL||'http://127.0.0.1:5182/',out=process.env.ARTIFACTS_DIR||'/workspace/artifacts/window';await mkdir(out,{recursive:true});
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 const errors=[],external=[];
-const digest=b=>createHash('sha256').update(b).digest('hex');
 async function page(options={}){const p=await browser.newPage(options);p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url())&&!r.url().startsWith(new URL(base).origin))external.push(r.url());});return p;}
 async function ready(p){await p.goto(base);await p.waitForFunction(()=>window.worldWindow?.getState().ready&&window.worldWindow.getState().frames>0);}
 try{
@@ -24,8 +23,22 @@ try{
  // Check rendered rain, not only the toggle's state. Freeze the camera and photo lighting.
  await p.locator('[data-time=photo]').click();await p.waitForTimeout(1200);
  await p.screenshot({path:out+'/desktop-rain.png',fullPage:true});
- await p.locator('#quiet').click();const pausedFrame=await p.evaluate(()=>worldWindow.getState().frames);await p.waitForFunction(f=>worldWindow.getState().frames>f,pausedFrame);const frozen=digest(await p.locator('#view').screenshot({mask:[p.locator('.location')]}));await p.waitForTimeout(1100);assert.equal(digest(await p.locator('#view').screenshot({mask:[p.locator('.location')]})),frozen,'Paused rain must freeze its rendered pixels');
- await p.locator('#quiet').click();await p.waitForTimeout(1200);assert.notEqual(digest(await p.locator('#view').screenshot({mask:[p.locator('.location')]})),frozen,'Resuming rain must animate the glass');
+ // Read the framebuffer immediately after a rendered frame: browser screenshots
+ // can differ by one compositing rounding level even when the WebGL pixels freeze.
+ async function renderedPixels(){return p.evaluate(()=>new Promise(resolve=>{
+  const before=worldWindow.getState().frames;
+  function read(){if(worldWindow.getState().frames<=before){requestAnimationFrame(read);return;}
+   const canvas=document.querySelector('#view'),gl=canvas.getContext('webgl');
+   const pixels=new Uint8Array(canvas.width*canvas.height*4);
+   gl.readPixels(0,0,canvas.width,canvas.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+   crypto.subtle.digest('SHA-256',pixels).then(hash=>resolve(Array.from(new Uint8Array(hash)).join(',')));
+  }requestAnimationFrame(read);
+ }));}
+ await p.locator('#quiet').click();const frozen=await renderedPixels();
+ const pausedTime=await p.evaluate(()=>worldWindow.getState().elapsed);
+ await p.waitForTimeout(1100);assert.equal(await renderedPixels(),frozen,'Paused rain must freeze its rendered pixels');
+ assert.equal(await p.evaluate(()=>worldWindow.getState().elapsed),pausedTime);
+ await p.locator('#quiet').click();await p.waitForTimeout(1200);assert.notEqual(await renderedPixels(),frozen,'Resuming rain must animate the glass');
  await p.evaluate(()=>worldWindow.selectScene(3));await p.locator('[data-time=live]').click();await p.waitForTimeout(1100);await p.screenshot({path:out+'/desktop-local-light.png',fullPage:true});await p.locator('[data-time=photo]').click();
  assert.equal(await p.evaluate(()=>worldWindow.getState().depthSource),'depth-anything-v2-small');
  await p.locator('#about-open').click();assert.equal(await p.locator('#about').evaluate(e=>e.open),true);await p.locator('#photo').setInputFiles(new URL('../assets/coast.webp',import.meta.url).pathname);await p.waitForFunction(()=>worldWindow.getState().custom);assert.equal(await p.evaluate(()=>worldWindow.getState().depthSource),'approximate');assert.equal(await p.locator('#about').evaluate(e=>e.open),false);await p.locator('[data-scene="0"]').click();await p.waitForFunction(()=>!worldWindow.getState().custom);assert.equal(await p.evaluate(()=>worldWindow.getState().depthSource),'depth-anything-v2-small');

@@ -1,6 +1,6 @@
 import {scenes} from './scenes.js?v=20261117-depth';
 import {sunPosition,phase,localTime} from './solar.js';
-import {createRenderer} from './renderer.js?v=20261111';
+import {createRenderer} from './renderer.js?v=20261117-depth';
 const $=s=>document.querySelector(s),reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={room:'css',depthSource:'approximate',scene:3,mode:'photo',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
 let roomRenderer=null,renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null,rainNow=0;
