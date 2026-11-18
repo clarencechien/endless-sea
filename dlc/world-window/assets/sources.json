@@ -11,7 +11,7 @@
     "sourceSHA256": "0e72ed46b5316cb5fb67fc81ff85b024a09146fd89ef3811a8d2299647ada118",
     "photo": "assets/venice.webp",
     "depth": "assets/venice-depth.png",
-    "processing": "Original 1024x512 HDR panorama; ACES tone mapping to sRGB WebP. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry.",
+    "processing": "Original 1024x512 HDR panorama; ACES tone mapping to sRGB WebP. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry. Far-side colors extended behind depth edges for small viewpoint changes.",
     "sourceRevision": "739478bc5ac18509be78095ed8f2fa4403b8207e",
     "depthInference": {
       "manifest": "assets/depth-inference.json",
@@ -19,7 +19,8 @@
       "revision": "5426e4f0f36572d16453bbda7a8389317b1bef99",
       "weightsSHA256": "3152477ce0d8d6978d76b995120de97cb5b928701fd0f817769f59e249a16b70",
       "depthSHA256": "3ecb34c92eddd2b255394fefaa0b76cc5345af0267798c9c90254769025bee24"
-    }
+    },
+    "backplate": "assets/venice-back.webp"
   },
   {
     "id": "coast",
@@ -33,7 +34,7 @@
     "sourceSHA256": "1cb809a131ff3cb7df94b639d5967fc6fc08ecd25b6c43930af3b5d99f1d8855",
     "photo": "assets/coast.webp",
     "depth": "assets/coast-depth.png",
-    "processing": "Original 1024x512 HDR panorama; ACES tone mapping to sRGB WebP. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry.",
+    "processing": "Original 1024x512 HDR panorama; ACES tone mapping to sRGB WebP. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry. Far-side colors extended behind depth edges for small viewpoint changes.",
     "sourceRevision": "739478bc5ac18509be78095ed8f2fa4403b8207e",
     "depthInference": {
       "manifest": "assets/depth-inference.json",
@@ -41,7 +42,8 @@
       "revision": "5426e4f0f36572d16453bbda7a8389317b1bef99",
       "weightsSHA256": "3152477ce0d8d6978d76b995120de97cb5b928701fd0f817769f59e249a16b70",
       "depthSHA256": "0c1617a2733e3c1259fc220d3eceb268300ba1c1d02ae01fee293dcb65ba8c9c"
-    }
+    },
+    "backplate": "assets/coast-back.webp"
   },
   {
     "id": "meadow",
@@ -55,7 +57,7 @@
     "sourceSHA256": "38199a31e945906f6778431e989256a92d9d78b0cfc0f902accad9f5244bf50f",
     "photo": "assets/meadow.webp",
     "depth": "assets/meadow-depth.png",
-    "processing": "Original 1024x512 HDR panorama; ACES tone mapping to sRGB WebP. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry.",
+    "processing": "Original 1024x512 HDR panorama; ACES tone mapping to sRGB WebP. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry. Far-side colors extended behind depth edges for small viewpoint changes.",
     "sourceRevision": "739478bc5ac18509be78095ed8f2fa4403b8207e",
     "depthInference": {
       "manifest": "assets/depth-inference.json",
@@ -63,7 +65,8 @@
       "revision": "5426e4f0f36572d16453bbda7a8389317b1bef99",
       "weightsSHA256": "3152477ce0d8d6978d76b995120de97cb5b928701fd0f817769f59e249a16b70",
       "depthSHA256": "cca3015803895068ff9c78802eca7e4af2d5bd54cae8206a17bf4e2f8132157f"
-    }
+    },
+    "backplate": "assets/meadow-back.webp"
   },
   {
     "id": "lake",
@@ -85,13 +88,14 @@
     "photo": "assets/lake.webp",
     "depth": "assets/lake-depth.png",
     "preview": "assets/lake-still.webp",
-    "processing": "Native 4096x2048 JPEG converted to WebP without upscaling; perspective preview. Image adaptations remain CC BY-SA 3.0. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry.",
+    "processing": "Native 4096x2048 JPEG converted to WebP without upscaling; perspective preview. Image adaptations remain CC BY-SA 3.0. Viewing region uses offline Depth Anything V2 Small relative inverse depth (R soft / G sharp); unseen panorama retains approximate depth; original water mask B preserved. Not metric geometry. Far-side colors extended behind depth edges for small viewpoint changes.",
     "depthInference": {
       "manifest": "assets/depth-inference.json",
       "model": "depth-anything/Depth-Anything-V2-Small-hf",
       "revision": "5426e4f0f36572d16453bbda7a8389317b1bef99",
       "weightsSHA256": "3152477ce0d8d6978d76b995120de97cb5b928701fd0f817769f59e249a16b70",
       "depthSHA256": "cae02669b8cf130e3d8298cb3379715e61e77a2148ae42053a211a10923eb4f1"
-    }
+    },
+    "backplate": "assets/lake-back.webp"
   }
 ]

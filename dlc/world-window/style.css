@@ -41,3 +41,23 @@ main{width:min(1240px,96%)}.intro{margin:0 0 7px}h1{font-size:clamp(24px,2.6vw,3
 /* WebGL2 room: CSS decor remains as the fallback until the first successful draw. */
 #room-view{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:0;mask-image:linear-gradient(to bottom,transparent,#000 28px,#000 calc(100% - 55px),transparent),linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent);mask-composite:intersect}
 .has-room3d #room-view{opacity:1}.has-room3d #window{background:none;box-shadow:none}.has-room3d #window::before,.has-room3d #window::after,.has-room3d .curtain,.has-room3d .sill,.has-room3d .sill-front,.has-room3d .cup,.has-room3d .room-shadow{visibility:hidden}.has-room3d .reveal{box-shadow:none}.has-room3d::before,.has-room3d::after{opacity:0}.has-room3d .location,.has-room3d #status{z-index:4}
+
+.view-controls{display:none}
+@media(pointer:coarse){
+ .view-controls{display:flex;gap:.75rem;justify-content:center;align-items:center;margin:.25rem auto 1rem;flex-wrap:wrap}
+ #tilt{border:1px solid #a39d8a;border-radius:2rem;min-height:44px}
+ #tilt[aria-pressed=true]{background:#d0d4c5}
+ #view-help{font-size:12px;color:#645f52}
+ .reveal{touch-action:pan-y}
+}
+@media(pointer:coarse) and (max-width:600px){
+ .intro{margin:0 auto}.intro .eyebrow{display:none}.intro h1{margin:.35em 0;font-size:22px}
+ .room{padding:18px 12px 52px}.reveal{aspect-ratio:.83}
+}
+
+@media(pointer:coarse) and (orientation:landscape) and (max-height:550px){
+ .intro{display:none}header{padding:.25rem 4%}
+ .room{max-width:calc(120svh + 60px);margin:auto;padding:8px 14px 24px}
+ .reveal{aspect-ratio:1.6}.view-controls{margin-top:.3rem}
+}
+.room:not(:has(#window.ready)) + .view-controls{display:none}

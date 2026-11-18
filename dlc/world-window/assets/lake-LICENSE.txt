@@ -1,7 +1,7 @@
 Jordan Pond panorama — Matthew Petroff
 Source: https://raw.githubusercontent.com/mpetroff/pannellum/818b698d2b60d9cd534a9395ea838d4d33ccb06d/examples/examplepano.jpg
 Source revision: 818b698d2b60d9cd534a9395ea838d4d33ccb06d
-Changes: WebP conversion, perspective preview, Depth Anything V2 Small relative-depth inference in the viewing region (approximate depth elsewhere), and the original hand-authored water mask. These adaptations remain CC BY-SA 3.0.
+Changes: WebP conversion, perspective preview, Depth Anything V2 Small relative-depth inference in the viewing region (approximate depth elsewhere), a background extension for small viewpoint changes, and the original hand-authored water mask. These adaptations remain CC BY-SA 3.0.
 
 This work is licensed under the Creative Commons Attribution-ShareAlike 3.0
 Unported License. To view a copy of this license, visit

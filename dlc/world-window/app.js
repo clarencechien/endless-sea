@@ -1,9 +1,14 @@
+import {mobileView} from './viewpoint.js';
 import {scenes} from './scenes.js?v=20261117-depth';
 import {sunPosition,phase,localTime} from './solar.js';
-import {createRenderer} from './renderer.js?v=20261117-depth';
+import {createRenderer} from './renderer.js?v=20261118-window';
 const $=s=>document.querySelector(s),reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const state={room:'css',depthSource:'approximate',scene:3,mode:'photo',offset:0,motion:!reduced.matches,rain:false,paused:false,custom:false,ready:false,frames:0};
 let roomRenderer=null,renderer=null,lost=false,request=0,images=null,elapsed=0,last=0,lastDraw=0,lastHud=0,pointer=[0,0],drift=[0,0],uploadedURL=null,rainNow=0;
+const touchView=matchMedia('(pointer:coarse)');
+const mobile=mobileView($('#view'),$('#tilt'),$('#view-help'),()=>{
+ if(!state.motion||state.paused){state.motion=true;state.paused=false;setPressed();}
+});
 const cache=new Map();
 function loadImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Image load failed'));im.src=url;});}
 function initRenderer(){try{renderer=createRenderer($('#view'));if(images)renderer.load(...images);$('#window').classList.add('ready');}catch{renderer=null;$('#status').textContent='此瀏覽器先以靜態照片陪你看風景。';}}
@@ -11,22 +16,22 @@ initRenderer();
 if(renderer)import('./room.js?v=20261111-room3d').then(({createRoom})=>{
  try{roomRenderer=createRoom($('#room-view'),$('.room'),$('#view'),mode=>state.room=mode);roomRenderer.draw();}catch{state.room='css';}
 }).catch(()=>{state.room='css';});
-function sourceURLs(i){return [`./assets/${scenes[i].id}.webp`,`./assets/${scenes[i].id}-depth.png?v=20261117-depth`];}
+function sourceURLs(i){return [`./assets/${scenes[i].id}.webp`,`./assets/${scenes[i].id}-depth.png?v=20261117-depth`,`./assets/${scenes[i].id}-back.webp`];}
 function setPressed(){document.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.scene===state.scene&&!state.custom)));document.querySelectorAll('[data-time]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.time===state.mode)));for(const [id,key]of [['motion','motion'],['rain','rain'],['quiet','paused']])$('#'+id).setAttribute('aria-pressed',String(state[key]));$('#quiet').textContent=state.paused?'繼續看':'停一會';$('#offset').value=state.offset===0?'此刻':`${state.offset>0?'+':''}${state.offset.toFixed(1)} 小時`;$('#hour').value=state.offset;}
 async function selectScene(i){
  const token=++request;$('#status').textContent='正在開一扇窗…';
- try{if(!cache.has(i))cache.set(i,Promise.all(sourceURLs(i).map(loadImage)));const loaded=await cache.get(i);if(token!==request)return;
+ try{if(!cache.has(i))cache.set(i,Promise.all(sourceURLs(i).map((url,index)=>index===2?loadImage(url).catch(()=>null):loadImage(url))));const loaded=await cache.get(i);if(token!==request)return;
   images=loaded;renderer?.load(...loaded);state.scene=i;state.custom=false;state.depthSource=scenes[i].depthSource;state.ready=true;drift=[0,0];$('#still').src=scenes[i].preview||sourceURLs(i)[0];$('#still').alt=`${scenes[i].name}實景窗景`;$('#caption').textContent=scenes[i].caption;$('#place').textContent=scenes[i].en;$('#status').textContent=renderer?'':'此瀏覽器先以靜態照片陪你看風景。';if(uploadedURL){URL.revokeObjectURL(uploadedURL);uploadedURL=null;}setPressed();updateHud();
  }catch{cache.delete(i);if(token===request)$('#status').textContent='窗景沒能載入，請再選一次。';}
 }
 scenes.forEach((s,i)=>{const b=document.createElement('button');b.className='place';b.dataset.scene=i;b.innerHTML=`<span>${s.name}</span><small>${String(i+1).padStart(2,'0')} / WINDOW</small>`;b.onclick=()=>selectScene(i);$('#places').appendChild(b);const li=document.createElement('li'),a=document.createElement('a');a.href=s.source||'https://polyhaven.com/a/'+s.asset;a.target='_blank';a.rel='noopener noreferrer';a.textContent=`${s.name} · ${s.author||'Poly Haven'} · ${s.license||'CC0'}`;li.appendChild(a);$('#credits').appendChild(li);});
 document.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{state.mode=b.dataset.time;if(state.mode==='live')state.offset=0;setPressed();updateHud();});
 $('#hour').oninput=e=>{state.offset=+e.target.value;state.mode='live';setPressed();updateHud();};
-$('#motion').onclick=()=>{state.motion=!state.motion;if(!state.motion)drift=[0,0];setPressed();};$('#rain').onclick=()=>{state.rain=!state.rain;setPressed();};$('#quiet').onclick=()=>{state.paused=!state.paused;setPressed();};
+$('#motion').onclick=()=>{state.motion=!state.motion;if(!state.motion){mobile.reset();drift=[0,0];}setPressed();};$('#rain').onclick=()=>{state.rain=!state.rain;setPressed();};$('#quiet').onclick=()=>{state.paused=!state.paused;setPressed();};
 $('#full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{$('#status').textContent='此瀏覽器無法全螢幕，橫向看也很舒服。';}};
 const about=$('#about');$('#about-open').onclick=()=>about.showModal();$('#about-close').onclick=()=>about.close();
 $('#view').addEventListener('pointermove',e=>{const r=e.currentTarget.getBoundingClientRect();pointer=[(e.clientX-r.left)/r.width-.5,(e.clientY-r.top)/r.height-.5];});$('#view').addEventListener('pointerleave',()=>pointer=[0,0]);
-reduced.addEventListener('change',e=>{state.motion=!e.matches;setPressed();});
+reduced.addEventListener('change',e=>{state.motion=!e.matches;if(e.matches){mobile.reset();drift=[0,0];}setPressed();});
 $('#photo').onchange=async e=>{
  const file=e.target.files[0];if(!file)return;const token=++request;let url;
  try{if(file.size>20*1024*1024)throw Error('請選擇小於 20 MB 的照片。');$('#upload-status').textContent='正在打開照片…';url=URL.createObjectURL(file);const im=await loadImage(url);if(token!==request){URL.revokeObjectURL(url);return;}
@@ -43,12 +48,21 @@ function tick(now){requestAnimationFrame(tick);if(document.hidden){last=0;return
  if(!state.paused&&!about.open){elapsed+=dt;if(state.mode==='cycle'){state.offset+=dt*.25;if(state.offset>12)state.offset-=24;}}
  const active=!state.paused&&!about.open&&(state.motion||state.rain||rainNow>.001||state.mode==='cycle');if(now-lastDraw<(active?1000/30:1000))return;lastDraw=now;
  if(state.ready&&renderer&&!lost){const s=scenes[state.scene],sun=sunPosition(new Date(Date.now()+state.offset*3600000),s.lat,s.lon),night=Math.max(0,Math.min(1,(4-sun.elevation)/14)),warm=Math.max(0,1-Math.abs(sun.elevation-2)/10);
-  if(!state.paused&&!about.open){const target=state.motion?[Math.sin(elapsed*.15)*.002+pointer[0]*.008,Math.sin(elapsed*.11)*.0007+pointer[1]*.002]:[0,0];drift=drift.map((v,i)=>v+(target[i]-v)*.1);}
+  if(!state.paused&&!about.open){let target=[0,0];
+   if(state.motion){
+    if(touchView.matches){
+     const [x,y]=mobile.pose();
+     // The room camera uses 14,000 CSS pixels per drift unit.
+     const travel=Math.min(48,$('#view').clientWidth*.105)/14000;
+     target=[x*travel,y*travel*.65];
+    }else target=[Math.sin(elapsed*.15)*.002+pointer[0]*.008,Math.sin(elapsed*.11)*.0007+pointer[1]*.002];
+   }
+   drift=drift.map((v,i)=>v+(target[i]-v)*.22);}
   if(!state.paused&&!about.open)rainNow+=((state.rain?1:0)-rainNow)*.12;
   document.documentElement.style.setProperty('--room-night',state.mode==='photo'?0:night);
   document.documentElement.style.setProperty('--room-warm',state.mode==='photo'?.25:warm*(1.-night));
   roomRenderer?.draw({night:state.mode==='photo'?0:night,warm:state.mode==='photo'?.25:warm,drift});
-  renderer.draw({animate:state.motion?1:0,panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,drift:state.room==='webgl'?drift.map(v=>v*.2):drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
+  renderer.draw({animate:state.motion?1:0,panorama:state.custom?0:1,center:s.position,position:state.custom ? .5 : s.position,eye:state.custom?null:drift.map(v=>v*14000),drift:state.room==='webgl'?drift.map(v=>v*.2):drift,time:elapsed,night,warm,rain:rainNow,original:state.mode==='photo'?1:0});state.frames++;
  }
  if(now-lastHud>1000){lastHud=now;if(state.mode==='cycle')setPressed();updateHud();}
 }
